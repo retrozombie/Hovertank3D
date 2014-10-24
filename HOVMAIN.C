@@ -19,6 +19,7 @@
 #define CATALOG
 
 #include "HOVERDEF.H"
+#include "GAMECFG.H"
 #pragma hdrstop
 
 /*
@@ -87,54 +88,36 @@ memptr scalesegs[NUMPICS];
 
 void DoHelpText(void)
 {
-  CenterWindow (38,14);
+    CenterWindow(38, 14);
 
-  fontcolor = 13;
-  CPPrint ("HoverTank Commands\n");
-  fontcolor = 15;
-  py+=6;
-  PPrint (
-"F2  : Sound on / off\n"
-"F3  : Keyboard mode / custom\n"
-"F4  : Joystick mode\n"
-"F5  : Reset game\n"
-"ESC : Quit\n");
+    fontcolor = 13;
+    CPPrint(gameStrings[STR_DoHelpText1]); // as: string replacements
+    fontcolor = 15;
+    py += 6;
+    PPrint(gameStrings[STR_DoHelpText2]); // as: string replacements
 
-  py+=6;
-  PPrint (
-"UP / DOWN : forward/reverse\n"
-"LEFT / RIGHT : turn\n");
+    py += 6;
+    PPrint(gameStrings[STR_DoHelpText3]); // as: string replacements
 
-  py+=6;
-  CPPrint ("<MORE>");
-  Ack();
-  EraseWindow ();
+    py += 6;
+    CPPrint(gameStrings[STR_DoHelpText4]); // as: string replacements
+    Ack();
+    EraseWindow();
 
-  CPPrint ("Button 1 / Ctrl\n");
-  CPPrint ("---------------\n\n");
+    CPPrint(gameStrings[STR_DoHelpText5]); // as: string replacements
+    CPPrint(gameStrings[STR_DoHelpText6]); // as: string replacements
 
-  PPrint (
-/*.....................................*/
-"Charge cannon.  A fully charged cannon\n"
-"can shoot through multiple targets.\n"
-"While the cannon is charging, your\n"
-"tanks turning speed is halved for fine\n"
-"aiming adjustments.\n\n");
+    PPrint(gameStrings[STR_DoHelpText7]); // as: string replacements
 
-  CPPrint ("<MORE>");
-  Ack();
-  EraseWindow ();
+    CPPrint(gameStrings[STR_DoHelpText8]); // as: string replacements
+    Ack();
+    EraseWindow();
 
-  CPPrint ("Button 2 / Alt\n");
-  CPPrint ("---------------\n\n");
-  PPrint (
-/*.....................................*/
-"Afterburner thrusting.  Doubles your\n"
-"forward or backwards speed, but does\n"
-"not effect your turning speed.\n");
+    CPPrint(gameStrings[STR_DoHelpText9]); // as: string replacements
+    CPPrint(gameStrings[STR_DoHelpText10]); // as: string replacements
+    PPrint(gameStrings[STR_DoHelpText11]); // as: string replacements
 
-  Ack();
-
+    Ack();
 }
 
 
@@ -146,21 +129,21 @@ void DoHelpText(void)
 ==================
 */
 
-void DebugMemory (void)
+void DebugMemory(void)
 {
-  CenterWindow (16,7);
+    CenterWindow(16, 7);
 
-  CPPrint ("Memory Usage\n");
-  CPPrint ("------------");
-  PPrint ("\nTotal     :");
-  PPrintUnsigned (totalmem/64);
-  PPrint ("k\nFree      :");
-  PPrintUnsigned (MMUnusedMemory()/64);
-  PPrint ("k\nWith purge:");
-  PPrintUnsigned (MMTotalFree()/64);
-  PPrint ("k\n");
-  CPPrint ("");
-  PGet();
+    CPPrint(gameStrings[STR_DebugMemory1]); // as: string replacements
+    CPPrint(gameStrings[STR_DebugMemory2]); // as: string replacements
+    PPrint(gameStrings[STR_DebugMemory3]); // as: string replacements
+    PPrintUnsigned(totalmem / 64);
+    PPrint(gameStrings[STR_DebugMemory4]); // as: string replacements
+    PPrintUnsigned(MMUnusedMemory() / 64);
+    PPrint(gameStrings[STR_DebugMemory5]); // as: string replacements
+    PPrintUnsigned(MMTotalFree() / 64);
+    PPrint(gameStrings[STR_DebugMemory6]); // as: string replacements
+    CPPrint(gameStrings[STR_DebugMemory7]); // as: string replacements
+    PGet();
 }
 
 
@@ -173,52 +156,51 @@ void DebugMemory (void)
 =
 ================
 */
-void DebugKeys (void)
+void DebugKeys(void)
 {
-  int i;
+    int i;
 
-  if (keydown[0x22])            // G = god mode
-  {
-    ExpWin (12,1);
-    if (godmode)
-      CPPrint ("God mode off");
-    else
-      CPPrint ("God mode on");
-    Ack();
-    godmode ^= 1;
-  }
-  else if (keydown[0x32])       // M = memory info
-  {
-	DebugMemory();
-  }
-  if (keydown[0x19])            // P = pause with no screen disruptioon
-  {
-	singlestep=1;
-  }
-  if (keydown[0x1f])            // S = shield point
-  {
-	screenofs = 0;
-	HealPlayer();
-  }
-  else if (keydown[0x14])       // T = free time
-  {
-	if (timestruct.min<9)
-	  timestruct.min++;
-	screenofs = 0;
-	DrawPic (6,48,DIGIT0PIC+timestruct.min);
-  }
-  else if (keydown[0x11])       // W = warp to level
-  {
-    ExpWin(26,1);
-    PPrint("Warp to which level(1-20):");
-    i = InputInt();
-    if (i>=1 && i<=21)
+    if(keydown[0x22])            // G = god mode
     {
-      level = i-1;
-      leveldone=1;
+        ExpWin(12, 1);
+        if(godmode)
+            CPPrint(gameStrings[STR_DebugKeys1]); // as: string replacements
+        else
+            CPPrint(gameStrings[STR_DebugKeys2]); // as: string replacements
+        Ack();
+        godmode ^= 1;
     }
-  }
-
+    else if(keydown[0x32])       // M = memory info
+    {
+        DebugMemory();
+    }
+    if(keydown[0x19])            // P = pause with no screen disruptioon
+    {
+        singlestep = 1;
+    }
+    if(keydown[0x1f])            // S = shield point
+    {
+        screenofs = 0;
+        HealPlayer(ARMORUPSND);
+    }
+    else if(keydown[0x14])       // T = free time
+    {
+        if(timestruct.min < 9)
+            timestruct.min++;
+        screenofs = 0;
+        DrawPic(6, 48, DIGIT0PIC + timestruct.min);
+    }
+    else if(keydown[0x11])       // W = warp to level
+    {
+        ExpWin(26, 1);
+        PPrint(gameStrings[STR_DebugKeys3]); // as: string replacements
+        i = InputInt();
+        if(i >= 1 && i <= 21)
+        {
+            level = i - 1;
+            leveldone = 1;
+        }
+    }
 }
 
 /*=========================================================================*/
@@ -235,65 +217,65 @@ void DebugKeys (void)
 
 int CheckKeys(void)
 {
-  if (!NBKscan)
-    return 0;
+    if(!NBKscan)
+        return 0;
 
-  switch (NBKscan&0x7f)
-  {
-    case 0x3b:                  // F1 = help
-      ClearKeys ();
-      DoHelpText ();
-      break;
-    case 0x3c:                  // F2 = sound on/off
-      ClearKeys ();
-      ExpWin (13,1);
-      PPrint ("Sound (Y/N)?");
-	  ch=toupper(PGet());
-      if (ch=='N')
-	soundmode = false;
-      else if (ch=='Y')
-	soundmode = true;
-      break;
-    case 0x3d:                  // F3 = keyboard mode
-      ClearKeys ();
-      calibratekeys ();
-      break;
-    case 0x3e:                  // F4 = joystick mode
-      ClearKeys ();
-      CalibrateJoy (1);
-      break;
-    case 0x3f:                  // F5 = reset game
-      ClearKeys ();
-      ExpWin (18,1);
-      PPrint ("RESET GAME (Y/N)?");
-      ch=toupper(PGet());
-      if (ch=='Y')
-      {
-	resetgame = 1;
-	leveldone = -99;
-      }
-      break;
+    switch(NBKscan & 0x7f)
+    {
+        case 0x3b:                  // F1 = help
+            ClearKeys();
+            DoHelpText();
+            break;
+        case 0x3c:                  // F2 = sound on/off
+            ClearKeys();
+            ExpWin(13, 1);
+            PPrint(gameStrings[STR_CheckKeys1]); // as: string replacements
+            ch = toupper(PGet());
+            if(ch == 'N')
+                soundmode = false;
+            else if(ch == 'Y')
+                soundmode = true;
+            break;
+        case 0x3d:                  // F3 = keyboard mode
+            ClearKeys();
+            calibratekeys();
+            break;
+        case 0x3e:                  // F4 = joystick mode
+            ClearKeys();
+            CalibrateJoy(1);
+            break;
+        case 0x3f:                  // F5 = reset game
+            ClearKeys();
+            ExpWin(18, 1);
+            PPrint(gameStrings[STR_CheckKeys2]); // as: string replacements
+            ch = toupper(PGet());
+            if(ch == 'Y')
+            {
+                resetgame = 1;
+                leveldone = -99;
+            }
+            break;
 
-    case 0x58:                  // F12 + ? = debug keys
-      DebugKeys();
-      break;
-	 case 1:                        // ESC = quit
-      ClearKeys ();
-      ExpWin (12,1);
-		PPrint ("QUIT (Y/N)?");
-      ch=toupper(PGet());
-      if (ch=='Y')
-	Quit ("");
-      break;
-
-
-    default:
-      return 0;
-  }
+        case 0x58:                  // F12 + ? = debug keys
+            DebugKeys();
+            break;
+        case 1:                        // ESC = quit
+            ClearKeys();
+            ExpWin(12, 1);
+            PPrint(gameStrings[STR_CheckKeys3]); // as: string replacements
+            ch = toupper(PGet());
+            if(ch == 'Y')
+                Quit("");
+            break;
 
 
-  ClearKeys ();
-  return 1;
+        default:
+            return 0;
+    }
+
+
+    ClearKeys();
+    return 1;
 }
 
 
@@ -851,65 +833,65 @@ void PlaySound (int num)
 =====================
 */
 
-void Intro (void)
+void Intro(void)
 {
-  memptr shapeseg;
-  int i,f,sx,sy,page;
-  unsigned pageptr[2],pagewidth[2],pageheight[2];
-  float x,y,z,angle,step,sn,cs,maxz,sizescale,maxy,coordscale,scale;
-  float ytop,xmid,minz,worldycenter,worldxcenter;
+    memptr shapeseg;
+    int i, f, sx, sy, page;
+    unsigned pageptr[2], pagewidth[2], pageheight[2];
+    float x, y, z, angle, step, sn, cs, maxz, sizescale, maxy, coordscale, scale;
+    float ytop, xmid, minz, worldycenter, worldxcenter;
 
-  FadeOut();
+    FadeOut();
 
-  SetLineWidth(SCREENWIDTH);
+    SetLineWidth(SCREENWIDTH);
 
-  screenofs=0;
+    screenofs = 0;
 
-  CacheDrawPic (STARSPIC);
-  pxl=0;
-  pxh=320;
-  py=180;
+    CacheDrawPic(STARSPIC);
+    pxl = 0;
+    pxh = 320;
+    py = 180;
 #ifndef CATALOG
-  CPPrint ("Copyright (c) 1991-93 Softdisk Publishing\n");
-//  CPPrint ("'I' for information");
+    CPPrint ("Copyright (c) 1991-93 Softdisk Publishing\n");
+    //  CPPrint ("'I' for information");
 #endif
-  EGAWRITEMODE(1);
-  EGAMAPMASK(15);
-  CopyEGA(40,200,0,0x4000);
-  CopyEGA(40,200,0,0x8000);
-  CopyEGA(40,200,0,0xc000);
-  StopDrive();
+    EGAWRITEMODE(1);
+    EGAMAPMASK(15);
+    CopyEGA(40, 200, 0, 0x4000);
+    CopyEGA(40, 200, 0, 0x8000);
+    CopyEGA(40, 200, 0, 0xc000);
+    StopDrive();
 
-  CachePic (STARTPICS+LOGOPIC);
+    CachePic(STARTPICS + LOGOPIC);
 
-  SC_MakeShape(
-    grsegs[STARTPICS+LOGOPIC],
-    0,
-    0,
-    &shapeseg);
+    SC_MakeShape(
+        grsegs[STARTPICS + LOGOPIC],
+        0,
+        0,
+        &shapeseg);
 
-// SC_MakeShape(
-//    grsegs[STARTPICS+LOGOPIC],
-//    pictable[LOGOPIC].width,
-//    pictable[LOGOPIC].height,
-//    &shapeseg);
+    // SC_MakeShape(
+    //    grsegs[STARTPICS+LOGOPIC],
+    //    pictable[LOGOPIC].width,
+    //    pictable[LOGOPIC].height,
+    //    &shapeseg);
 
-  MMFreePtr(&grsegs[STARTPICS+LOGOPIC]);
+    MMFreePtr(&grsegs[STARTPICS + LOGOPIC]);
 
 
-  FadeIn();
-  sx=160;
-  sy=180;
+    FadeIn();
+    sx = 160;
+    sy = 180;
 
-//  memset (zbuffer,0,sizeof(zbuffer));
+    //  memset (zbuffer,0,sizeof(zbuffer));
 
-/*
-=============================================================================
+    /*
+    =============================================================================
 
-		  SCALED PICTURE DIRECTOR
+    SCALED PICTURE DIRECTOR
 
-=============================================================================
-*/
+    =============================================================================
+    */
 
 #define PICHEIGHT       64      // full size height of scaled pic
 #define NUMFRAMES       300.0
@@ -917,114 +899,114 @@ void Intro (void)
 #define RADIUS          1000.0  // world coordinates
 #define DISTANCE        1000.0  // center point z distance
 
-  minz = cos(MAXANGLE)*RADIUS;  // closest point
-  minz += DISTANCE;
-  sizescale = 256*minz;         // closest point will be full size
-  ytop = 80 - (PICHEIGHT/2)*(sizescale/DISTANCE)/256;
-  z = sizescale/(DISTANCE*256);
-  ytop = ytop/z;        // world coordinates
-  worldycenter=ytop-RADIUS;
-  xmid=sin(MAXANGLE)*RADIUS/2;
-  worldxcenter=-xmid;
+    minz = cos(MAXANGLE)*RADIUS;  // closest point
+    minz += DISTANCE;
+    sizescale = 256 * minz;         // closest point will be full size
+    ytop = 80 - (PICHEIGHT / 2)*(sizescale / DISTANCE) / 256;
+    z = sizescale / (DISTANCE * 256);
+    ytop = ytop / z;        // world coordinates
+    worldycenter = ytop - RADIUS;
+    xmid = sin(MAXANGLE)*RADIUS / 2;
+    worldxcenter = -xmid;
 
-  f=1;
-  page = inttime = screenofs = pagewidth[0] = pagewidth[1] = 0;
-  do
-  {
-	 step = f/NUMFRAMES;
-	 angle=MAXANGLE*step;
-	 sn=sin(angle);
-	 cs=cos(angle);
-	 x=worldxcenter+sn*RADIUS/2;
-	 y=worldycenter+sn*RADIUS;
-	 z=DISTANCE+cs*RADIUS;
-	 scale = sizescale/z;
-	 sx=160+ (int)(x*scale/256);
-	 sy=100- (int)(y*scale/256);
+    f = 1;
+    page = inttime = screenofs = pagewidth[0] = pagewidth[1] = 0;
+    do
+    {
+        step = f / NUMFRAMES;
+        angle = MAXANGLE*step;
+        sn = sin(angle);
+        cs = cos(angle);
+        x = worldxcenter + sn*RADIUS / 2;
+        y = worldycenter + sn*RADIUS;
+        z = DISTANCE + cs*RADIUS;
+        scale = sizescale / z;
+        sx = 160 + (int)(x*scale / 256);
+        sy = 100 - (int)(y*scale / 256);
 
-	 inttime=0;
-	 sound((int)(sn*1500));
+        inttime = 0;
+        sound((int)(sn * 1500));
 
-//
-// erase old position
-//
-	 if (pagewidth[page])
-	 {
-		EGAWRITEMODE(1);
-		EGAMAPMASK(15);
-		CopyEGA(pagewidth[page],pageheight[page],
-		pageptr[page]+0x8000,pageptr[page]);
-	 }
+        //
+        // erase old position
+        //
+        if(pagewidth[page])
+        {
+            EGAWRITEMODE(1);
+            EGAMAPMASK(15);
+            CopyEGA(pagewidth[page], pageheight[page],
+                pageptr[page] + 0x8000, pageptr[page]);
+        }
 
-//
-// draw new position
-//
-	 EGAWRITEMODE(2);
-	 if (SC_ScaleShape(sx,sy,(int)scale<40 ? 10 : scale/4,shapeseg))
-	 {
-		pagewidth[page]=scaleblockwidth;
-		pageheight[page]=scaleblockheight;
-		pageptr[page]=scaleblockdest;
-	 }
-	 else
-		pagewidth[page]=0;
+        //
+        // draw new position
+        //
+        EGAWRITEMODE(2);
+        if(SC_ScaleShape(sx, sy, (int)scale < 40 ? 10 : scale / 4, shapeseg))
+        {
+            pagewidth[page] = scaleblockwidth;
+            pageheight[page] = scaleblockheight;
+            pageptr[page] = scaleblockdest;
+        }
+        else
+            pagewidth[page] = 0;
 
-	 EGAWRITEMODE(0);
-	 EGABITMASK(255);
+        EGAWRITEMODE(0);
+        EGABITMASK(255);
 
-//
-// display it
-//
-	 SetScreen(screenofs,0);
+        //
+        // display it
+        //
+        SetScreen(screenofs, 0);
 
-	 page^=1;
-	 screenofs = 0x4000*page;
+        page ^= 1;
+        screenofs = 0x4000 * page;
 
-	 f++;
+        f++;
 
-	 if (f<NUMFRAMES)
-	 {
-		f+=inttime;
-		if (f>NUMFRAMES)
-	f=NUMFRAMES;
-	 }
-	 else
-	  f++;  // last frame is shown
+        if(f<NUMFRAMES)
+        {
+            f += inttime;
+            if(f>NUMFRAMES)
+                f = NUMFRAMES;
+        }
+        else
+            f++;  // last frame is shown
 
-	 if (NBKscan>0x7f)
-		break;
-  } while (f<=NUMFRAMES);
-  nosound();
+        if(NBKscan > 0x7f)
+            break;
+    } while(f <= NUMFRAMES);
+    nosound();
 
-  for (i=0;i<200;i++)
-  {
-	 WaitVBL(1);
-	 if (NBKscan>0x7f)
-	 {
+    for(i = 0; i<200; i++)
+    {
+        WaitVBL(1);
+        if(NBKscan>0x7f)
+        {
 #if 0
-		if (NBKscan==0x97)              //'I' for info
-		{
-	screenofs^=0x4000;
-  CenterWindow(24,10);
-	py+=2;
-  CPPrint ("Hovertank v1.17\n\n");
-	CPPrint ("Softdisk Publishing delivers a\n");
-	CPPrint ("high quality EGA game to\n");
-	CPPrint ("your door every month!\n");
-	CPPrint ("Call 1-800-831-2694 for\n");
-	CPPrint ("subscription rates and\n");
-	CPPrint ("back issues.\n");
-	ClearKeys();
-	Ack();
-		}
-		ClearKeys();
-		break;
+            if (NBKscan==0x97)              //'I' for info
+            {
+                screenofs^=0x4000;
+                CenterWindow(24,10);
+                py+=2;
+                CPPrint(gameStrings[STR_Intro1]); // as: string replacements
+                CPPrint(gameStrings[STR_Intro2]); // as: string replacements
+                CPPrint(gameStrings[STR_Intro3]); // as: string replacements
+                CPPrint(gameStrings[STR_Intro4]); // as: string replacements
+                CPPrint(gameStrings[STR_Intro5]); // as: string replacements
+                CPPrint(gameStrings[STR_Intro6]); // as: string replacements
+                CPPrint(gameStrings[STR_Intro7]); // as: string replacements
+                ClearKeys();
+                Ack();
+            }
+            ClearKeys();
+            break;
 #endif
 
-	 }
-  }
+        }
+    }
 
-  MMFreePtr(&shapeseg);
+    MMFreePtr(&shapeseg);
 }
 
 //==========================================================================
@@ -1039,50 +1021,50 @@ void Intro (void)
 =====================
 */
 #define PAUSE   300
-void DemoLoop (void)
+void DemoLoop(void)
 {
-  int i,originx;
-  ControlStruct c;
+    int i, originx;
+    ControlStruct c;
 
-  FadeOut();
+    FadeOut();
 
-  CacheDrawPic (TITLEPIC);
-  StopDrive();  // make floppy motors turn off
+    CacheDrawPic(TITLEPIC);
+    StopDrive();  // make floppy motors turn off
 
-  FadeIn ();
+    FadeIn();
 
-  originx=0;
-  i=100;
-  while (1)
-  {
-    if (i>PAUSE && i<=PAUSE+80)
-      originx+=4;
-
-    if (i>PAUSE*2 && i<=PAUSE*2+80)
-      originx-=4;
-
-    if (i>PAUSE*2+80)
-      i=0;
-
-    SetScreen(originx/8,originx%8);
-
-    i++;
-
-    screenofs = originx/8;
-    if (CheckKeys())
+    originx = 0;
+    i = 100;
+    while(1)
     {
-      EGAWRITEMODE(1);
-      EGAMAPMASK(15);
-      CopyEGA(80,200,0x4000,0);
-    }
-    c=ControlPlayer(1);
-    if (c.button1 || c.button2)
-      break;
-    if (keydown[0x39])
-      break;
-  }
+        if(i > PAUSE && i <= PAUSE + 80)
+            originx += 4;
 
-  ClearKeys();
+        if(i > PAUSE * 2 && i <= PAUSE * 2 + 80)
+            originx -= 4;
+
+        if(i > PAUSE * 2 + 80)
+            i = 0;
+
+        SetScreen(originx / 8, originx % 8);
+
+        i++;
+
+        screenofs = originx / 8;
+        if(CheckKeys())
+        {
+            EGAWRITEMODE(1);
+            EGAMAPMASK(15);
+            CopyEGA(80, 200, 0x4000, 0);
+        }
+        c = ControlPlayer(1);
+        if(c.button1 || c.button2)
+            break;
+        if(keydown[0x39])
+            break;
+    }
+
+    ClearKeys();
 }
 
 
@@ -1095,39 +1077,39 @@ void DemoLoop (void)
 =
 ====================
 */
-void SetupGraphics (void)
+void SetupGraphics(void)
 {
-  int i;
+    int i;
 
-  InitGrFile ();        // load the graphic file header
+    InitGrFile();        // load the graphic file header
 
-//
-// go through the pics and make scalable shapes, the discard the pic
-//
-  for (i=MAN1PIC;i<DASHPIC;i++)
-  {
-    CachePic (STARTPICS+i);
-    SC_MakeShape(
-      grsegs[STARTPICS+i],
-      pictable[i].width,
-      pictable[i].height,
-      &scalesegs[i]);
-    MMFreePtr (&grsegs[STARTPICS+i]);
-  }
+    //
+    // go through the pics and make scalable shapes, the discard the pic
+    //
+    for(i = MAN1PIC; i < DASHPIC; i++)
+    {
+        CachePic(STARTPICS + i);
+        SC_MakeShape(
+            grsegs[STARTPICS + i],
+            pictable[i].width,
+            pictable[i].height,
+            &scalesegs[i]);
+        MMFreePtr(&grsegs[STARTPICS + i]);
+    }
 
-//
-// load the basic graphics
-//
+    //
+    // load the basic graphics
+    //
 
-  needgr[STARTFONT] = 1;
-  needgr[STARTTILE8] = 1;
+    needgr[STARTFONT] = 1;
+    needgr[STARTTILE8] = 1;
 
-  for (i=DASHPIC;i<ENDPIC;i++)
-    needgr[STARTPICS+i]=1;
+    for(i = DASHPIC; i < ENDPIC; i++)
+        needgr[STARTPICS + i] = 1;
 
-  CacheGrFile ();       // load all graphics now (no caching)
+    CacheGrFile();       // load all graphics now (no caching)
 
-  fontseg = grsegs[STARTFONT];
+    fontseg = grsegs[STARTFONT];
 }
 
 //==========================================================================
@@ -1142,38 +1124,38 @@ void SetupGraphics (void)
 #define RETRY   1
 #define ABORT   2
 
-int ErrorHandler(int errval,int ax,int bx,int si)
+int ErrorHandler(int errval, int ax, int bx, int si)
 {
-  unsigned key;
+    unsigned key;
 
-  key=ax+bx+si+errval;
+    key = ax + bx + si + errval;
 
-//  screenofs=screenorigin=0;
-//  SetScreen(0,0);
-  CenterWindow(32,3);
-  py++;
-  CPPrint("Disk I/O error! Press ENTER to\n");
-  CPPrint("resume, or ESC to abort:");
-  SetNormalPalette();
+    //  screenofs=screenorigin=0;
+    //  SetScreen(0,0);
+    CenterWindow(32, 3);
+    py++;
+    CPPrint("Disk I/O error! Press ENTER to\n");
+    CPPrint("resume, or ESC to abort:");
+    SetNormalPalette();
 
-  ClearKeys();
+    ClearKeys();
 
-  do{
-	 key=(PGet()&0xff);
-	} while(key!=27 && key!=13);
+    do{
+        key = (PGet() & 0xff);
+    } while(key != 27 && key != 13);
 
-  if (key!=27)
-	hardresume(RETRY);
+    if(key != 27)
+        hardresume(RETRY);
 
-  _AX = 3;
-  geninterrupt (0x10);  // text mode
+    _AX = 3;
+    geninterrupt(0x10);  // text mode
 
-  if (KBDstarted)
-	ShutdownKbd (); // shut down the interrupt driven stuff if needed
-  if (SNDstarted)
-	ShutdownSound ();
+    if(KBDstarted)
+        ShutdownKbd(); // shut down the interrupt driven stuff if needed
+    if(SNDstarted)
+        ShutdownSound();
 
-  return ABORT;
+    return ABORT;
 }
 
 
@@ -1185,23 +1167,23 @@ int ErrorHandler(int errval,int ax,int bx,int si)
 // Allocate memory and load file in
 //
 ////////////////////////////////////////////////////////////
-void LoadIn(char *filename,char huge **baseptr)
+void LoadIn(char *filename, char huge **baseptr)
 {
- int handle;
- long len;
- unsigned datapage;
+    int handle;
+    long len;
+    unsigned datapage;
 
 
- if ((handle=open(filename,O_BINARY))==-1)
-   {
-	printf("Error loading file '%s'!\n",filename);
-	exit(1);
-   }
+    if((handle = open(filename, O_BINARY)) == -1)
+    {
+        printf("Error loading file '%s'!\n", filename);
+        exit(1);
+    }
 
- len=filelength(handle);
- *baseptr=(char huge *)farmalloc(len);
+    len = filelength(handle);
+    *baseptr = (char huge *)farmalloc(len);
 
- LoadFile(filename,*baseptr);
+    LoadFile(filename, *baseptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1212,31 +1194,31 @@ void LoadIn(char *filename,char huge **baseptr)
 //
 ///////////////////////////////////////////////////////////////////////////
 int
-US_CheckParm(char *parm,char **strings)
+US_CheckParm(char *parm, char **strings)
 {
-	char    cp,cs,
-			*p,*s;
-	int             i;
+    char    cp, cs,
+        *p, *s;
+    int             i;
 
-	while (!isalpha(*parm)) // Skip non-alphas
-		parm++;
+    while(!isalpha(*parm)) // Skip non-alphas
+        parm++;
 
-	for (i = 0;*strings && **strings;i++)
-	{
-		for (s = *strings++,p = parm,cs = cp = 0;cs == cp;)
-		{
-			cs = *s++;
-			if (!cs)
-				return(i);
-			cp = *p++;
+    for(i = 0; *strings && **strings; i++)
+    {
+        for(s = *strings++, p = parm, cs = cp = 0; cs == cp;)
+        {
+            cs = *s++;
+            if(!cs)
+                return(i);
+            cp = *p++;
 
-			if (isupper(cs))
-				cs = tolower(cs);
-			if (isupper(cp))
-				cp = tolower(cp);
-		}
-	}
-	return(-1);
+            if(isupper(cs))
+                cs = tolower(cs);
+            if(isupper(cp))
+                cp = tolower(cp);
+        }
+    }
+    return(-1);
 }
 ///////////////////////////////////////////////////////////////////////////
 
@@ -1251,6 +1233,51 @@ US_CheckParm(char *parm,char **strings)
 static  char                    *EntryParmStrings[] = {"detour",0};
 static  char                    *SBlasterStrings[] = {"NOBLASTER",0};
 
+unsigned char soundLinks[SNDEX_NUMSOUNDS] =
+{
+	// The first 20 link 1:1 with the originals
+	0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+
+	TAKEDAMAGESND, // SNDEX_DRONEDAMAGE
+	SHOOTTHINGSND, // SNDEX_DRONEDIE
+	FIRESND, // SNDEX_TANKFIRE
+	TAKEDAMAGESND, // SNDEX_TANKDAMAGE
+	SHOOTTHINGSND, // SNDEX_TANKDIE
+	WARPGATESND, // SNDEX_LASTDEAD1
+	WARPGATESND, // SNDEX_LASTDEAD2
+	WARPGATESND, // SNDEX_LASTDEAD3
+	WARPGATESND, // SNDEX_LASTDEAD4
+	SAVEHOSTAGESND, // SNDEX_SAVHOSTAGE2
+    LASTHOSTAGESND, // SNDEX_LSTHOSTAGE2
+    HOSTAGEDEADSND, // SNDEX_HSTAGEDEAD2
+	HOSTAGEDEADSND, // SNDEX_HSTAGEDEAD3
+	HOSTAGEDEADSND, // SNDEX_HSTAGEDEAD4
+	FIRESND, // SNDEX_FIRE2
+	SHOOTWALLSND, // SNDEX_PSHOTWALL
+	SHOOTWALLSND, // SNDEX_PSHOTWALL2
+	ARMORUPSND, // SNDEX_SHIELDUP
+};
+
+static void LoadSoundLinks(void)
+{
+    int handle;
+
+    if((handle = open("SOUNDLNK."EXTENSION, O_RDONLY | O_BINARY, S_IREAD)) == -1)
+        return; // Use default
+
+    if(filelength(handle) == SNDEX_NUMSOUNDS)
+        read(handle, soundLinks, SNDEX_NUMSOUNDS);
+    else
+        printf("Warning: SoundLinks not load (length wrong)!");
+
+    close(handle);
+}
+
+void PlaySound(int index)
+{
+	OldPlaySound(soundLinks[index]);
+}
+
 void main(void)
 {
   int i,x,xl,xh,y,plane,size;
@@ -1258,13 +1285,15 @@ void main(void)
 
 	boolean LaunchedFromShell = false;
 
+    GameConfigLoad();
+
 	textbackground(0);
 	textcolor(7);
 	if (stricmp(_argv[1], "/VER") == 0)
 	{
-		printf("HOVERTANK 3-D\n");
-		printf("Copyright 1991-93 Softdisk Publishing\n");
-		printf("Version 1.17\n");
+        printf(gameStrings[STR_main1]); // as: string replacements
+        printf(gameStrings[STR_main2]); // as: string replacements
+        printf(gameStrings[STR_main3]); // as: string replacements
 		exit(0);
 	}
 
@@ -1335,8 +1364,8 @@ void main(void)
 
 #endif
 
-
-
+	// as: Support for extra sound effects
+	LoadSoundLinks();
 
   if (soundblaster)
   {

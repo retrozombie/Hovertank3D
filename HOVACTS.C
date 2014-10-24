@@ -62,7 +62,7 @@ int guncount;
 void SpawnPlayer (fixed gx, fixed gy);
 void GetRefugee (objtype *hit);
 void CheckFire (void);
-void DamagePlayer (void);
+void DamagePlayer(int sound);
 void Thrust (void);
 void Reverse (void);
 void AfterBurn (void);
@@ -79,7 +79,7 @@ void SpawnWarp (fixed gx, fixed gy);
 void WarpThink (void);
 
 void SpawnRefugee (fixed gx, fixed gy,int sex);
-void KillRefugee (objtype *hit);
+void KillRefugee (objtype *hit, int player);
 void RefugeeThink (void);
 
 void SpawnDrone (fixed gx, fixed gy);
@@ -145,19 +145,33 @@ void SpawnPlayer (fixed gx, fixed gy)
 ===================
 */
 
-void GetRefugee (objtype *hit)
+void GetRefugee(objtype *hit)
 {
-  PlaySound (SAVEHOSTAGESND);
-  hit->class = nothing;
-  if (hit->radarx)
-    XPlot (hit->radarx,hit->radary,hit->radarcolor);
-  DrawPic (2*savedcount+1,6,SAVEDGUYPIC);
-  savedcount++;
-  if (!--numrefugees)
-  {
-    PlaySound (LASTHOSTAGESND);
-    SpawnWarp (warpx,warpy);
-  }
+    // as: Support for extra sound effects
+    if(hit->temp1 == MAN1PIC)
+        PlaySound(SAVEHOSTAGESND);
+    else
+        PlaySound(SNDEX_SAVHOSTAGE2); // SAVEHOSTAGESND
+
+    hit->class = nothing;
+
+    if(hit->radarx)
+        XPlot(hit->radarx, hit->radary, hit->radarcolor);
+
+    DrawPic(2 * savedcount + 1, 6, SAVEDGUYPIC);
+
+    savedcount++;
+
+    if(!--numrefugees)
+    {
+        // as: Support for extra sound effects
+        if(hit->temp1 == MAN1PIC)
+            PlaySound(LASTHOSTAGESND);
+        else
+            PlaySound(SNDEX_LSTHOSTAGE2); // LASTHOSTAGESND
+
+        SpawnWarp(warpx, warpy);
+    }
 }
 
 /*
@@ -168,44 +182,54 @@ void GetRefugee (objtype *hit)
 ===================
 */
 
-void CheckFire (void)
+void CheckFire(void)
 {
-  if (gunstate == rearming)
-  {
-    if ( (guncount+=tics) > GUNARM)
+    if(gunstate == rearming)
     {
-      gunstate = ready;
-      PlaySound(GUNREADYSND);
-      DrawPic (14,40,READYPIC);
+        if((guncount += tics) > GUNARM)
+        {
+            gunstate = ready;
+            PlaySound(GUNREADYSND);
+            DrawPic(14, 40, READYPIC);
+        }
+        return;
     }
-    return;
-  }
 
-  if (c.button1)
-  {
-  // holding down button
-    if (gunstate==ready)
+    if(c.button1)
     {
-      gunstate = charging;
-      DrawPic (14,40,CHARGINGPIC);
-      guncount = 0;
+        // holding down button
+        if(gunstate == ready)
+        {
+            gunstate = charging;
+            DrawPic(14, 40, CHARGINGPIC);
+            guncount = 0;
+        }
+
+        if(gunstate == charging && (guncount += tics) > GUNCHARGE)
+        {
+            PlaySound(MAXPOWERSND);
+            gunstate = maxpower;
+            DrawPic(14, 40, MAXPOWERPIC);
+        }
     }
-    if ( gunstate == charging && (guncount+=tics) > GUNCHARGE)
+    else
+        // button up
+    if(gunstate > ready)	// fire small shot if charging, large if maxed
     {
-      PlaySound(MAXPOWERSND);
-      gunstate = maxpower;
-      DrawPic (14,40,MAXPOWERPIC);
-    }
-  }
-  else
-  // button up
-    if (gunstate>ready)	// fire small shot if charging, large if maxed
-    {
-      DrawPic (14,40,REARMINGPIC);
-      guncount = 0;
-      SpawnShot (obon.x,obon.y,obon.angle,pshotobj+(gunstate-charging));
-      gunstate = rearming;
-      PlaySound (FIRESND);
+        classtype shotType;
+
+        DrawPic(14, 40, REARMINGPIC);
+        guncount = 0;
+
+        shotType = pshotobj + (gunstate - charging);
+        SpawnShot(obon.x, obon.y, obon.angle, shotType);
+        gunstate = rearming;
+
+        // as: Support for extra sound effects
+        if(shotType == pshotobj)
+            PlaySound(FIRESND);
+        else
+            PlaySound(SNDEX_FIRE2);
     }
 }
 
@@ -218,30 +242,42 @@ void CheckFire (void)
 ===================
 */
 
-void DamagePlayer (void)
+void DamagePlayer(int sound)
 {
-  PlaySound (TAKEDAMAGESND);
-  if (!godmode && !--objlist[0].hitpoints)
-  {
-    PlaySound(PLAYERDEADSND);
-    while (SoundPlaying())
-    ;
-    leveldone = -1;		// all hit points gone
-  }
-  else
-    DrawPic (24,36,SHIELDLOWPIC+1-objlist[0].hitpoints);
-  ColorBorder(12);
-  bordertime = 60;
+    // as: Support for extra sound effects
+    PlaySound(sound); // TAKEDAMAGESND
+
+    if(!godmode && !--objlist[0].hitpoints)
+    {
+        PlaySound(PLAYERDEADSND);
+
+        while(SoundPlaying())
+        {
+        }
+
+        leveldone = -1;		// all hit points gone
+    }
+    else
+    {
+        DrawPic(24, 36, SHIELDLOWPIC + 1 - objlist[0].hitpoints);
+    }
+
+    ColorBorder(12);
+    bordertime = 60;
 }
 
-void HealPlayer (void)
+void HealPlayer(int sound)
 {
-  PlaySound (ARMORUPSND);
-  if (objlist[0].hitpoints<3)
-    objlist[0].hitpoints++;
-  DrawPic (24,36,SHIELDLOWPIC+1-objlist[0].hitpoints);
-  ColorBorder(9);
-  bordertime = 60;
+    // as: Support for extra sound effects
+    PlaySound(sound); // ARMORUPSND
+ 
+    if(objlist[0].hitpoints < 3)
+        objlist[0].hitpoints++;
+    
+    DrawPic(24, 36, SHIELDLOWPIC + 1 - objlist[0].hitpoints);
+    
+    ColorBorder(9);
+    bordertime = 60;
 }
 
 
@@ -285,22 +321,24 @@ void Reverse (void)
 ===================
 */
 
-void AfterBurn (void)
+void AfterBurn(void)
 {
-  xmove = FixedByFrac(PLAYERAFTERBURN*tics,costable[obon.angle]);
-  ymove = FixedByFrac(PLAYERAFTERBURN*tics,sintable[obon.angle])^SIGNBIT;
-  ClipMove();
-  if (!SoundPlaying())
-    PlaySound(AFTERBURNSND);
+    xmove = FixedByFrac(PLAYERAFTERBURN*tics, costable[obon.angle]);
+    ymove = FixedByFrac(PLAYERAFTERBURN*tics, sintable[obon.angle]) ^ SIGNBIT;
+    ClipMove();
+ 
+    if(!SoundPlaying())
+        PlaySound(AFTERBURNSND);
 }
 
-void BeforeBurn (void)
+void BeforeBurn(void)
 {
-  xmove = FixedByFrac(PLAYERAFTERBURN*tics,costable[obon.angle]^SIGNBIT);
-  ymove = FixedByFrac(PLAYERAFTERBURN*tics,sintable[obon.angle]);
-  ClipMove();
-  if (!SoundPlaying())
-    PlaySound(AFTERBURNSND);
+    xmove = FixedByFrac(PLAYERAFTERBURN*tics, costable[obon.angle] ^ SIGNBIT);
+    ymove = FixedByFrac(PLAYERAFTERBURN*tics, sintable[obon.angle]);
+    ClipMove();
+ 
+    if(!SoundPlaying())
+        PlaySound(AFTERBURNSND);
 }
 
 
@@ -312,82 +350,89 @@ void BeforeBurn (void)
 ===================
 */
 
-void PlayerThink (void)
+void PlayerThink(void)
 {
-  int anglechange;
-  objtype *check;
+    int anglechange;
+    objtype *check;
 
-  if (c.button1)		// hold down fire for slow adjust
-  {
-    if (tics<=4)
+    if(c.button1)		// hold down fire for slow adjust
     {
-      anglechange = ANGLESTEP*tics/2;
-      if (!anglechange)
-	anglechange=1;
+        if(tics <= 4)
+        {
+            anglechange = ANGLESTEP*tics / 2;
+            if(!anglechange)
+                anglechange = 1;
+        }
+        else
+            anglechange = ANGLESTEP * 2;
     }
     else
-      anglechange = ANGLESTEP*2;
-  }
-  else
-    anglechange = ANGLESTEP*tics;
+        anglechange = ANGLESTEP*tics;
 
-  if (c.dir==west || c.dir==northwest || c.dir==southwest)
-  {
-    obon.angle+=anglechange;
-
-    if ( obon.angle >= ANGLES )
-      obon.angle -= ANGLES;
-  }
-  else if (c.dir==east || c.dir==northeast || c.dir==southeast)
-  {
-    obon.angle-=anglechange;
-
-    if ( obon.angle < 0)
-      obon.angle += ANGLES;
-  }
-
-  if (c.button2 && (c.dir==south || c.dir==southeast || c.dir==southwest) )
-    BeforeBurn();
-  else if (c.button2)
-    AfterBurn();
-  else if (c.dir==north || c.dir==northeast || c.dir==northwest)
-    Thrust();
-  else if (c.dir==south || c.dir==southeast || c.dir==southwest)
-    Reverse();
-
-  CheckFire ();
-
-  for (check = &objlist[1];check<=lastobj;check++)
-    if
-    (check->class
-    && check->xl <= obon.xh
-    && check->xh >= obon.xl
-    && check->yl <= obon.yh
-    && check->yh >= obon.yl)
+    if(c.dir == west || c.dir == northwest || c.dir == southwest)
     {
-      switch (check->class)
-      {
-	case refugeeobj:
-	  GetRefugee (check);
-	  break;
+        obon.angle += anglechange;
 
-	case shieldobj:
-	  objlist[0] = obon;
-	  HealPlayer ();
-	  obon = objlist[0];
-	  check->class = nothing;
-	  if (check->radarx)
-	    XPlot (check->radarx,check->radary,check->radarcolor);
-	  break;
+        if(obon.angle >= ANGLES)
+            obon.angle -= ANGLES;
+    }
+    else if(c.dir == east || c.dir == northeast || c.dir == southeast)
+    {
+        obon.angle -= anglechange;
 
-	case warpobj:
-	  leveldone = 1;
-	  break;
-      }
+        if(obon.angle < 0)
+            obon.angle += ANGLES;
     }
 
-  StartView();			// calculate view position and trace walls
-				// FinishView in PlayLoop draws everything
+    if(c.button2 && (c.dir == south || c.dir == southeast || c.dir == southwest))
+        BeforeBurn();
+    else if(c.button2)
+        AfterBurn();
+    else if(c.dir == north || c.dir == northeast || c.dir == northwest)
+        Thrust();
+    else if(c.dir == south || c.dir == southeast || c.dir == southwest)
+        Reverse();
+
+    CheckFire();
+
+    for(check = &objlist[1]; check <= lastobj; check++)
+    if
+        (check->class
+        && check->xl <= obon.xh
+        && check->xh >= obon.xl
+        && check->yl <= obon.yh
+        && check->yh >= obon.yl)
+    {
+        switch(check->class)
+        {
+            case refugeeobj:
+                GetRefugee(check);
+                break;
+
+            case shieldobj:
+                objlist[0] = obon;
+
+                // as: Support for extra sound effects
+                HealPlayer(SNDEX_SHIELDUP); // ARMORUPSND
+
+                obon = objlist[0];
+
+                check->class = nothing;
+
+                if(check->radarx)
+                    XPlot(check->radarx, check->radary, check->radarcolor);
+
+                break;
+
+            case warpobj:
+                leveldone = 1;
+                break;
+        }
+    }
+
+    StartView();			// calculate view position and trace walls
+
+    // FinishView in PlayLoop draws everything
 }
 
 
@@ -445,12 +490,22 @@ void SpawnShot (fixed gx, fixed gy, int angle, classtype class)
 
 void ExplodeShot(void)
 {
-  PlaySound (SHOOTWALLSND);
-  obon.class = inertobj;
-  obon.shapenum = obon.temp1 = SHOTDIE1PIC;
-  obon.think = ExplodeThink;
-  obon.stage = 0;
-  TransformObon();
+int sound;
+
+    // as: Support for extra sound effects
+    sound = SNDEX_TSHOTWALL;
+    if(obon.class == pshotobj)
+        sound = SNDEX_PSHOTWALL;
+    else if(obon.class == pbigshotobj)
+        sound = SNDEX_PSHOTWALL2;
+
+    PlaySound(sound); // SHOOTWALLSND
+
+    obon.class = inertobj;
+    obon.shapenum = obon.temp1 = SHOTDIE1PIC;
+    obon.think = ExplodeThink;
+    obon.stage = 0;
+    TransformObon();
 }
 
 
@@ -555,78 +610,86 @@ int ClipPointMove (void)
 ===================
 */
 
-void ShotThink (void)
+void ShotThink(void)
 {
-  int i,xt,yt;
+int i, xt, yt;
+objtype *check;
 
-  objtype *check;
-
-  for (i=0;i<3;i++)	// so it can move over one tile distance
-  {
-    if (ClipPointMove())
+    for(i = 0; i < 3; i++)	// so it can move over one tile distance
     {
-      ExplodeShot();
-      return;
+        if(ClipPointMove())
+        {
+            ExplodeShot();
+            return;
+        }
+
+        CalcBounds();
+
+        for(check = &objlist[0]; check <= lastobj; check++)
+        if(check->class
+            && check->xl <= obon.xh
+            && check->xh >= obon.xl
+            && check->yl <= obon.yh
+            && check->yh >= obon.yl)
+        {
+            switch(check->class)
+            {
+                case playerobj:
+                    if(obon.class == mshotobj)
+                    {
+                        // as: Support for extra sound effects
+                        DamagePlayer(SNDEX_TANKDAMAGE);
+                        obon.class = nothing;
+                        return;
+                    }
+                    break;
+
+                case refugeeobj:
+                    // as: Support for extra sound effects
+                    KillRefugee(check, obon.class != mshotobj);
+
+                    if(obon.class == pbigshotobj)
+                        break;
+
+                    obon.class = nothing;
+                    return;
+
+                case mutantobj:
+                    KillMutant(check);
+
+                    if(obon.class == pbigshotobj)
+                        break;
+
+                    obon.class = nothing;
+                    return;
+
+                case tankobj:
+                    if(obon.class != mshotobj)
+                    {
+                        KillTank(check);
+
+                        if(obon.class == pbigshotobj)
+                            break;
+
+                        obon.class = nothing;
+                        return;
+                    }
+                    break;
+
+                case droneobj:
+                    KillDrone(check);
+
+                    if(obon.class == pbigshotobj)
+                        break;
+
+                    obon.class = nothing;
+                    return;
+            }
+        }
+
     }
 
-    CalcBounds();
-
-    for (check = &objlist[0];check<=lastobj;check++)
-      if
-      (check->class
-      && check->xl <= obon.xh
-      && check->xh >= obon.xl
-      && check->yl <= obon.yh
-      && check->yh >= obon.yl)
-      {
-	switch (check->class)
-	{
-	  case playerobj:
-	    if (obon.class == mshotobj)
-	    {
-	      DamagePlayer ();
-	      obon.class = nothing;
-	      return;
-	    }
-	    break;
-
-	  case refugeeobj:
-	    KillRefugee (check);
-	    if (obon.class == pbigshotobj)
-	      break;
-	    obon.class = nothing;
-	    return;
-
-	  case mutantobj:
-	    KillMutant (check);
-	    if (obon.class == pbigshotobj)
-	      break;
-	    obon.class = nothing;
-	    return;
-
-	  case tankobj:
-	    if (obon.class != mshotobj)
-	    {
-	      KillTank (check);
-	      if (obon.class == pbigshotobj)
-		break;
-	      obon.class = nothing;
-	      return;
-	    }
-	    break;
-
-	  case droneobj:
-	    KillDrone (check);
-	    if (obon.class == pbigshotobj)
-	      break;
-	    obon.class = nothing;
-	    return;
-	}
-      }
-
-  }
-
-  TransformObon();
+    TransformObon();
 }
 
 
@@ -785,29 +848,66 @@ void SpawnRefugee (fixed gx, fixed gy,int sex)
 ===================
 */
 
-void KillRefugee (objtype *hit)
+void KillRefugee(objtype *hit, int player)
 {
-  PlaySound (HOSTAGEDEADSND);
-  if (hit->radarx)
-    XPlot (hit->radarx,hit->radary,hit->radarcolor);
-  killedcount++;
-  DrawPic (2*(totalrefugees-killedcount)+1,6,DEADGUYPIC);
-  if (!--numrefugees)
-  {
-    PlaySound (WARPGATESND);
-    SpawnWarp (warpx,warpy);
-  }
+int sound;
 
-  hit->radarcolor = 0;
-  hit->class = inertobj;
-  if (hit->temp1 == MAN1PIC)
-    hit->shapenum = hit->temp1 = MANDIE1PIC;
-  else
-    hit->shapenum = hit->temp1 = WOMANDIE1PIC;
-  hit->think = ExplodeThink;
-  hit->stage = hit->ticcount = 0;
+    // as: Support for extra sound effects
+    sound = HOSTAGEDEADSND;
+    if(player)
+    {
+        if(hit->temp1 == MAN1PIC)
+            sound = SNDEX_HSTAGEDEAD3;
+        else
+            sound = SNDEX_HSTAGEDEAD4;
+    }
+    else
+    {
+        if(hit->temp1 != MAN1PIC)
+            sound = SNDEX_HSTAGEDEAD2;
+    }
+    PlaySound(sound); // HOSTAGEDEADSND
+
+    if(hit->radarx)
+        XPlot(hit->radarx, hit->radary, hit->radarcolor);
+
+    killedcount++;
+    
+    DrawPic(2 * (totalrefugees - killedcount) + 1, 6, DEADGUYPIC);
+    
+    if(!--numrefugees)
+    {
+        // as: Support for extra sound effects
+        if(player)
+        {
+            if(hit->temp1 == MAN1PIC)
+                sound = SNDEX_LASTDEAD3;
+            else
+                sound = SNDEX_LASTDEAD4;
+        }
+        else
+        {
+            if(hit->temp1 == MAN1PIC)
+                sound = SNDEX_LASTDEAD1;
+            else
+                sound = SNDEX_LASTDEAD2;
+        }
+        PlaySound(sound); // WARPGATESND
+
+        SpawnWarp(warpx, warpy);
+    }
+
+    hit->radarcolor = 0;
+    hit->class = inertobj;
+
+    if(hit->temp1 == MAN1PIC)
+        hit->shapenum = hit->temp1 = MANDIE1PIC;
+    else
+        hit->shapenum = hit->temp1 = WOMANDIE1PIC;
+
+    hit->think = ExplodeThink;
+    hit->stage = hit->ticcount = 0;
 }
-
 
 
 /*
@@ -818,18 +918,20 @@ void KillRefugee (objtype *hit)
 ===================
 */
 
-void RefugeeThink (void)
+void RefugeeThink(void)
 {
-  obon.ticcount+=tics;
-  if (obon.ticcount>REFUGEEANM)
-  {
-    obon.ticcount -= REFUGEEANM;
-    if (++obon.stage == 2)
-      obon.stage = 0;
-    obon.shapenum = obon.temp1 + obon.stage;
-  }
+    obon.ticcount += tics;
+    if(obon.ticcount > REFUGEEANM)
+    {
+        obon.ticcount -= REFUGEEANM;
 
-  TransformObon();
+        if(++obon.stage == 2)
+            obon.stage = 0;
+
+        obon.shapenum = obon.temp1 + obon.stage;
+    }
+
+    TransformObon();
 }
 
 
@@ -853,21 +955,24 @@ void RefugeeThink (void)
 ==================
 */
 
-void SpawnDrone (fixed gx, fixed gy)
+void SpawnDrone(fixed gx, fixed gy)
 {
-  FindFreeObj();
-  new->x = gx;
-  new->y = gy;
-  new->angle = 0;
-  new->think = DroneThink;
-  new->class = droneobj;
-  new->size = MINDIST;
-  new->radarcolor = 10;
-  new->hitpoints = 2;
-  new->shapenum = DRONE1PIC;
-  new->ticcount = Rnd(DRONEANM*3);
-  new->temp1 = (int)new;	// will hunt first think
-  CalcBoundsNew();
+    // as: Enemy stats
+    totalEnemies++;
+
+    FindFreeObj();
+    new->x = gx;
+    new->y = gy;
+    new->angle = 0;
+    new->think = DroneThink;
+    new->class = droneobj;
+    new->size = MINDIST;
+    new->radarcolor = 10;
+    new->hitpoints = 2;
+    new->shapenum = DRONE1PIC;
+    new->ticcount = Rnd(DRONEANM * 3);
+    new->temp1 = (int)new;	// will hunt first think
+    CalcBoundsNew();
 }
 
 
@@ -879,17 +984,22 @@ void SpawnDrone (fixed gx, fixed gy)
 ===================
 */
 
-void KillDrone (objtype *hit)
+void KillDrone(objtype *hit)
 {
-  PlaySound (SHOOTTHINGSND);
-  if (hit->radarx)
-    XPlot (hit->radarx,hit->radary,hit->radarcolor);
+    // as: Enemy stats
+    enemiesKilled++;
 
-  hit->radarcolor = 0;
-  hit->class = inertobj;
-  hit->shapenum = hit->temp1 = DRONEDIE1PIC;
-  hit->think = ExplodeThink;
-  hit->stage = hit->ticcount = 0;
+    // as: Support for extra sound effects
+    PlaySound(SNDEX_DRONEDIE); // SHOOTTHINGSND
+
+    if(hit->radarx)
+        XPlot(hit->radarx, hit->radary, hit->radarcolor);
+
+    hit->radarcolor = 0;
+    hit->class = inertobj;
+    hit->shapenum = hit->temp1 = DRONEDIE1PIC;
+    hit->think = ExplodeThink;
+    hit->stage = hit->ticcount = 0;
 }
 
 
@@ -925,54 +1035,61 @@ void DroneLockOn (void)
 ===================
 */
 
-void DroneThink (void)
+void DroneThink(void)
 {
-  if ( ((objtype *)obon.temp1)->class != refugeeobj &&
-       ((objtype *)obon.temp1)->class != playerobj)
-    DroneLockOn ();		// target died
+    if(((objtype *)obon.temp1)->class != refugeeobj &&
+        ((objtype *)obon.temp1)->class != playerobj)
+        DroneLockOn();		// target died
 
-  obon.ticcount+=tics;
-  if (obon.ticcount>DRONEANM)
-  {
-    obon.ticcount -= DRONEANM;
-    if (++obon.stage == 4)
-      obon.stage = 0;
-    obon.shapenum = DRONE1PIC + obon.stage;
-  }
-
-  ChaseThing ((objtype *)obon.temp1);
-
-  CalcBounds ();
-
-  TransformObon();
-
-  for (check = &objlist[0];check<=lastobj;check++)
-    if
-    (check->class
-    && check->xl <= obon.xh
-    && check->xh >= obon.xl
-    && check->yl <= obon.yh
-    && check->yh >= obon.yl)
+    obon.ticcount += tics;
+    if(obon.ticcount > DRONEANM)
     {
-      switch (check->class)
-      {
-	case playerobj:		// kill player and blow up
-	  DamagePlayer ();
-	  PlaySound (SHOOTTHINGSND);
-	  if (obon.radarx)
-	    XPlot (obon.radarx,obon.radary,obon.radarcolor);
+        obon.ticcount -= DRONEANM;
+        if(++obon.stage == 4)
+            obon.stage = 0;
 
-	  obon.radarcolor = 0;
-	  obon.class = inertobj;
-	  obon.shapenum = obon.temp1 = DRONEDIE1PIC;
-	  obon.think = ExplodeThink;
-	  obon.stage = obon.ticcount = 0;
-	  return;
+        obon.shapenum = DRONE1PIC + obon.stage;
+    }
 
-	case refugeeobj:
-	  KillRefugee (check);
-	  break;
-      }
+    ChaseThing((objtype *)obon.temp1);
+
+    CalcBounds();
+
+    TransformObon();
+
+    for(check = &objlist[0]; check <= lastobj; check++)
+    if(check->class
+        && check->xl <= obon.xh
+        && check->xh >= obon.xl
+        && check->yl <= obon.yh
+        && check->yh >= obon.yl)
+    {
+        switch(check->class)
+        {
+            case playerobj:		// kill player and blow up
+                // as: Support for extra sound effects
+                DamagePlayer(SNDEX_DRONEDAMAGE);
+
+                // as: Support for extra sound effects
+                PlaySound(SNDEX_DRONEDIE); // SHOOTTHINGSND
+
+                if(obon.radarx)
+                    XPlot(obon.radarx, obon.radary, obon.radarcolor);
+
+                // as: Enemy stats
+                enemiesKilled++;
+
+                obon.radarcolor = 0;
+                obon.class = inertobj;
+                obon.shapenum = obon.temp1 = DRONEDIE1PIC;
+                obon.think = ExplodeThink;
+                obon.stage = obon.ticcount = 0;
+                return;
+
+            case refugeeobj:
+                KillRefugee(check, 0);
+                break;
+        }
     }
 }
 
@@ -994,19 +1111,22 @@ void DroneThink (void)
 ==================
 */
 
-void SpawnTank (fixed gx, fixed gy)
+void SpawnTank(fixed gx, fixed gy)
 {
-  FindFreeObj();
-  new->x = gx;
-  new->y = gy;
-  new->angle = 0;
-  new->think = TankThink;
-  new->class = tankobj;
-  new->size = MINDIST;
-  new->shapenum = TANK1PIC;
-  new->radarcolor = 13;
-  new->hitpoints = 3;
-  CalcBoundsNew();
+    // as: Enemy stats
+    totalEnemies++;
+
+    FindFreeObj();
+    new->x = gx;
+    new->y = gy;
+    new->angle = 0;
+    new->think = TankThink;
+    new->class = tankobj;
+    new->size = MINDIST;
+    new->shapenum = TANK1PIC;
+    new->radarcolor = 13;
+    new->hitpoints = 3;
+    CalcBoundsNew();
 }
 
 
@@ -1018,17 +1138,22 @@ void SpawnTank (fixed gx, fixed gy)
 ===================
 */
 
-void KillTank (objtype *hit)
+void KillTank(objtype *hit)
 {
-  PlaySound (SHOOTTHINGSND);
-  if (hit->radarx)
-    XPlot (hit->radarx,hit->radary,hit->radarcolor);
+    // as: Enemy stats
+    enemiesKilled++;
 
-  hit->radarcolor = 0;
-  hit->class = inertobj;
-  hit->shapenum = hit->temp1 = TANKDIE1PIC;
-  hit->think = ExplodeThink;
-  hit->stage = hit->ticcount = 0;
+    // as: Support for extra sound effects
+    PlaySound(SNDEX_TANKDIE); // SHOOTTHINGSND
+
+    if(hit->radarx)
+        XPlot(hit->radarx, hit->radary, hit->radarcolor);
+
+    hit->radarcolor = 0;
+    hit->class = inertobj;
+    hit->shapenum = hit->temp1 = TANKDIE1PIC;
+    hit->think = ExplodeThink;
+    hit->stage = hit->ticcount = 0;
 }
 
 
@@ -1042,135 +1167,137 @@ void KillTank (objtype *hit)
 ======================
 */
 
-void AimAtPlayer (void)
+void AimAtPlayer(void)
 {
-  long deltax,deltay;
-  int i,xstep,ystep,tx,ty,steps;
-  dirtype d[3],tdir, olddir, turnaround;
+    long deltax, deltay;
+    int i, xstep, ystep, tx, ty, steps;
+    dirtype d[3], tdir, olddir, turnaround;
 
-  olddir=obon.dir;
-  turnaround=opposite[olddir];
+    olddir = obon.dir;
+    turnaround = opposite[olddir];
 
-  deltax=objlist[0].x-obon.x;
-  deltay=objlist[0].y-obon.y;
+    deltax = objlist[0].x - obon.x;
+    deltay = objlist[0].y - obon.y;
 
-  d[1]=nodir;
-  d[2]=nodir;
+    d[1] = nodir;
+    d[2] = nodir;
 
-  if (deltax>MINCHASE)
-    d[1]= east;
-  else if (deltax<-MINCHASE)
-    d[1]= west;
-  if (deltay>MINCHASE)
-    d[2]=south;
-  else if (deltay<-MINCHASE)
-    d[2]=north;
+    if(deltax > MINCHASE)
+        d[1] = east;
+    else if(deltax<-MINCHASE)
+        d[1] = west;
+    if(deltay>MINCHASE)
+        d[2] = south;
+    else if(deltay < -MINCHASE)
+        d[2] = north;
 
-  if (LABS(deltay)<LABS(deltax))
-  {
-    tdir=d[1];
-    d[1]=d[2];
-    d[2]=tdir;
-  }
-
-  if (d[1]==turnaround)
-    d[1]=nodir;
-  if (d[2]==turnaround)
-    d[2]=nodir;
-
-//
-// shoot at player if even aim and not reloading
-//
-  if (d[1]==nodir && !obon.stage)
-  {
-    xstep = ystep = 0;
-
-    if (deltax>MINCHASE)
+    if(LABS(deltay) < LABS(deltax))
     {
-      xstep = 1;
-      steps = ((objlist[0].x - obon.x)>>TILESHIFT)-1;
-      obon.angle = 0;
-    }
-    else if (deltax<-MINCHASE)
-    {
-      xstep = -1;
-      steps = ((obon.x - objlist[0].x)>>TILESHIFT)-1;
-      obon.angle = 180;
-    }
-    if (deltay>MINCHASE)
-    {
-      ystep = 1;
-      steps = ((objlist[0].y - obon.y)>>TILESHIFT)-1;
-      obon.angle = 270;
-    }
-    else if (deltay<-MINCHASE)
-    {
-      ystep = -1;
-      steps = ((obon.y - objlist[0].y)>>TILESHIFT)-1;
-      obon.angle = 90;
+        tdir = d[1];
+        d[1] = d[2];
+        d[2] = tdir;
     }
 
-    tx = obon.x >> TILESHIFT;
-    ty = obon.y >> TILESHIFT;
+    if(d[1] == turnaround)
+        d[1] = nodir;
+    if(d[2] == turnaround)
+        d[2] = nodir;
 
-    for (i=0;i<steps;i++)
+    //
+    // shoot at player if even aim and not reloading
+    //
+    if(d[1] == nodir && !obon.stage)
     {
-      tx += xstep;
-      ty += ystep;
-      if (tilemap[tx][ty])
-	goto cantshoot;			// shot is blocked
+        xstep = ystep = 0;
+
+        if(deltax > MINCHASE)
+        {
+            xstep = 1;
+            steps = ((objlist[0].x - obon.x) >> TILESHIFT) - 1;
+            obon.angle = 0;
+        }
+        else if(deltax<-MINCHASE)
+        {
+            xstep = -1;
+            steps = ((obon.x - objlist[0].x) >> TILESHIFT) - 1;
+            obon.angle = 180;
+        }
+        if(deltay>MINCHASE)
+        {
+            ystep = 1;
+            steps = ((objlist[0].y - obon.y) >> TILESHIFT) - 1;
+            obon.angle = 270;
+        }
+        else if(deltay < -MINCHASE)
+        {
+            ystep = -1;
+            steps = ((obon.y - objlist[0].y) >> TILESHIFT) - 1;
+            obon.angle = 90;
+        }
+
+        tx = obon.x >> TILESHIFT;
+        ty = obon.y >> TILESHIFT;
+
+        for(i = 0; i < steps; i++)
+        {
+            tx += xstep;
+            ty += ystep;
+            if(tilemap[tx][ty])
+                goto cantshoot;			// shot is blocked
+        }
+
+        // as: Support for extra sound effects
+        PlaySound(SNDEX_TANKFIRE); // FIRESND
+        SpawnShot(obon.x, obon.y, obon.angle, mshotobj);
+        obon.ticcount = 0;
+        obon.stage = 1;
     }
-    PlaySound (FIRESND);
-    SpawnShot (obon.x,obon.y,obon.angle,mshotobj);
-    obon.ticcount = 0;
-    obon.stage = 1;
-  }
 
 
-  if (d[1]!=nodir)
-  {
-    obon.dir=d[1];
-    if (Walk())
-      return;
-  }
+    if(d[1] != nodir)
+    {
+        obon.dir = d[1];
+        if(Walk())
+            return;
+    }
 
 cantshoot:
-  if (d[2]!=nodir)
-  {
-    obon.dir=d[2];
-    if (Walk())
-      return;
-  }
+    if(d[2] != nodir)
+    {
+        obon.dir = d[2];
+        if(Walk())
+            return;
+    }
 
-/* there is no direct path to the player, so pick another direction */
+    /* there is no direct path to the player, so pick another direction */
 
-  obon.dir=olddir;
-  if (Walk())
-    return;
+    obon.dir = olddir;
+    if(Walk())
+        return;
 
-  if (RndT()>128) 	/*randomly determine direction of search*/
-  {
-    for (tdir=north;tdir<=west;tdir+=2)
-      if (tdir!=turnaround)
-      {
-	obon.dir=tdir;
-	if (Walk())
-	  return;
-      }
-  }
-  else
-  {
-    for (tdir=west;tdir>=north;tdir-=2)
-      if (tdir!=turnaround)
-      {
-	obon.dir=tdir;
-	if (Walk())
-	  return;
-      }
-  }
+    if(RndT() > 128) 	/*randomly determine direction of search*/
+    {
+        for(tdir = north; tdir <= west; tdir += 2)
+        if(tdir != turnaround)
+        {
+            obon.dir = tdir;
+            if(Walk())
+                return;
+        }
+    }
+    else
+    {
+        for(tdir = west; tdir >= north; tdir -= 2)
+        if(tdir != turnaround)
+        {
+            obon.dir = tdir;
+            if(Walk())
+                return;
+        }
+    }
 
-  obon.dir=turnaround;
-  Walk();		// last chance, don't worry about returned value
+    obon.dir = turnaround;
+    Walk();		// last chance, don't worry about returned value
 }
 
 
@@ -1212,20 +1339,23 @@ void TankThink (void)
 ==================
 */
 
-void SpawnMutant (fixed gx, fixed gy)
+void SpawnMutant(fixed gx, fixed gy)
 {
-  FindFreeObj();
-  new->x = gx;
-  new->y = gy;
-  new->angle = 0;
-  new->think = MutantThink;
-  new->class = mutantobj;
-  new->size = MINDIST;
-  new->shapenum = MUTANT1PIC;
-  new->radarcolor = 12;
-  new->hitpoints = 1;
-  new->ticcount = Rnd(MUTANTANM*3);
-  CalcBoundsNew();
+    // as: Enemy stats
+    totalEnemies++;
+
+    FindFreeObj();
+    new->x = gx;
+    new->y = gy;
+    new->angle = 0;
+    new->think = MutantThink;
+    new->class = mutantobj;
+    new->size = MINDIST;
+    new->shapenum = MUTANT1PIC;
+    new->radarcolor = 12;
+    new->hitpoints = 1;
+    new->ticcount = Rnd(MUTANTANM * 3);
+    CalcBoundsNew();
 }
 
 
@@ -1238,17 +1368,22 @@ void SpawnMutant (fixed gx, fixed gy)
 ===================
 */
 
-void KillMutant (objtype *hit)
+void KillMutant(objtype *hit)
 {
-  PlaySound (SHOOTTHINGSND);
-  if (hit->radarx)
-    XPlot (hit->radarx,hit->radary,hit->radarcolor);
+    // as: Enemy stats
+    enemiesKilled++;
 
-  hit->radarcolor = 0;
-  hit->class = inertobj;
-  hit->shapenum = hit->temp1 = MUTANTDIE1PIC;
-  hit->think = ExplodeThink;
-  hit->stage = hit->ticcount = 0;
+    // as: Support for extra sound effects
+    PlaySound(SNDEX_MUTEDIE); // SHOOTTHINGSND
+
+    if(hit->radarx)
+        XPlot(hit->radarx, hit->radary, hit->radarcolor);
+
+    hit->radarcolor = 0;
+    hit->class = inertobj;
+    hit->shapenum = hit->temp1 = MUTANTDIE1PIC;
+    hit->think = ExplodeThink;
+    hit->stage = hit->ticcount = 0;
 }
 
 
@@ -1448,47 +1583,50 @@ void ChaseThing (objtype *chase)
 
 #define ATTACKZONE	(TILEGLOBAL)
 
-void MutantThink (void)
+void MutantThink(void)
 {
-   obon.ticcount += tics;
+    obon.ticcount += tics;
 
-  if (obon.stage==4)	// attack stage
-  {
-    if (obon.ticcount < MUTANTATTACK)
+    if(obon.stage == 4)	// attack stage
     {
-      TransformObon();
-      return;
+        if(obon.ticcount < MUTANTATTACK)
+        {
+            TransformObon();
+            return;
+        }
+        obon.ticcount = MUTANTANM + 1 - tics;
+        obon.stage = 0;
     }
-    obon.ticcount = MUTANTANM+1-tics;
-    obon.stage = 0;
-  }
 
-  if (obon.ticcount>MUTANTANM)
-  {
-    obon.ticcount -= MUTANTANM;
-    if (++obon.stage == 4)
-      obon.stage = 0;
-    obon.shapenum = MUTANT1PIC + obon.stage;
-  }
+    if(obon.ticcount>MUTANTANM)
+    {
+        obon.ticcount -= MUTANTANM;
 
-  if (objlist[0].xl <= obon.x + ATTACKZONE
-    && objlist[0].xh >= obon.x - ATTACKZONE
-    && objlist[0].yl <= obon.y + ATTACKZONE
-    && objlist[0].yh >= obon.y - ATTACKZONE)
-  {
-    obon.stage = 4;
-    obon.ticcount = 0;
-    obon.shapenum = MUTANTHITPIC;
-    DamagePlayer();
-  }
-  else
-    ChaseThing(&objlist[0]);
+        if(++obon.stage == 4)
+            obon.stage = 0;
 
-  CalcBounds ();
+        obon.shapenum = MUTANT1PIC + obon.stage;
+    }
 
-  TransformObon();
+    if(objlist[0].xl <= obon.x + ATTACKZONE
+        && objlist[0].xh >= obon.x - ATTACKZONE
+        && objlist[0].yl <= obon.y + ATTACKZONE
+        && objlist[0].yh >= obon.y - ATTACKZONE)
+    {
+        obon.stage = 4;
+        obon.ticcount = 0;
+        obon.shapenum = MUTANTHITPIC;
+        // as: Support for extra sound effects
+        DamagePlayer(SNDEX_MUTEDAMAGE);
+    }
+    else
+    {
+        ChaseThing(&objlist[0]);
+    }
 
+    CalcBounds();
 
+    TransformObon();
 }
 
 /*

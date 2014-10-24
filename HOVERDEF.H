@@ -248,6 +248,9 @@ extern	fixed xmove,ymove;
 extern int godmode,singlestep,leveldone,resetgame;
 extern int numrefugees,totalrefugees,savedcount,killedcount;
 
+// as: Enemy stats
+extern int enemiesKilled, totalEnemies;
+
 extern objtype objlist[MAXOBJECTS],obon,*new,*obj,*lastobj,*check;
 
 void PlayerThink (void);

@@ -1,0 +1,303 @@
+Hovertank3D.Game
+
+levnames0		"Zone 1: Langston Research Facility"
+levtext0		"Your first assignment is to rescue a\n" + 
+				"bunch of scientists who have\n" + 
+				"barracaded themselves inside the\n" + 
+				"Langston Research Facility. They were\n" + 
+				"working on a new, clean fuel until\n" + 
+				"some big oil corporations decided to\n" + 
+				"buy Langston out. Now insiders say\n" + 
+				"the corporation is going to nuke them.\n"
+levmin0			3
+levsec0			0
+
+levnames1		"Zone 2: Gardens of Marvin M. Mitchell"
+levtext1		"The Mitchell estate is home to many of\n" + 
+				"the world's most famous activists,\n" + 
+				"philanthropists, and do-gooders.\n" + 
+				"We've just found out that a group of\n" + 
+				"extremely rich industrialists have\n" + 
+				"funded a tactical strike on the estate\n" + 
+				"after some of the activists irritated\n" + 
+				"some of their interests.\n"
+levmin1			3
+levsec1			0
+
+levnames2		"Zone 3: Caves, Brazos de la Madre"
+levtext2		"A group of terrorists known as The Dark\n" + 
+				"Legion are holding a bunch of children\n" + 
+				"hostage until their demands are met.\n" + 
+				"The goverment has decided, with their\n" + 
+				"usual compassion, to nuke the Legion\n" + 
+				"along with their hostages. Get the\n" + 
+				"hostages out of there.\n"
+levmin2			4
+levsec2			0
+
+levnames3		"Zone 4: Fort Smith"
+levtext3		"The last renegades of the local\n" + 
+				"resistance are imprisoned for holding\n" + 
+				"rallies and publishing their anti-\n" + 
+				"government pamphlets. A superpower is\n" + 
+				"is planning to nuke Fort Smith for its\n" + 
+				"strategic importance.  We want those\n" + 
+				"renegades.\n"
+levmin3			4
+levsec3			0
+
+levnames4		"Zone 5: Coyote Canyon"
+levtext4		"A brilliant scientist and his daughter\n" + 
+				"are living on a missile site in the\n" + 
+				"canyon. The site is a military target,\n" + 
+				"and we want you to get Professor\n" + 
+				"Phillips back safely to Headquarters.\n"
+levmin4			6
+levsec4			0
+
+levnames5		"Zone 6: Santa Maria Cathedral"
+levtext5		"A group of priests have been tending\n" + 
+				"the dying at the cathedral, even\n" + 
+				"though their area is likely to be\n" + 
+				"bombed again. The mutants swarming\n" + 
+				"the area are insane.  Be careful!\n"
+levmin5			5
+levsec5			0
+
+levnames6		"Zone 7: Pax Humana Commune"
+levtext6		"This commune of peace demonstrators is\n" + 
+				"about to be toasted by the NMC -- the\n" + 
+				"National Munitions Corporation. Pax\n" + 
+				"Humana has been a thorn in their side\n" + 
+				"for many years. The thorn is about to\n" + 
+				"be removed...by nuclear means.\n"
+levmin6			5
+levsec6			0
+
+levnames7		"Zone 8: Sewers below New Trenton"
+levtext7		"This city's sewers hold the survivors\n" + 
+				"of the last nuclear attack. Unlucky\n" + 
+				"for them, the last one wasn't the\n" + 
+				"last one....\n"
+levmin7			5
+levsec7			0
+
+levnames8		"Zone 9: Old UFA Headquarters"
+levtext8		"Some operatives remain at the old\n" + 
+				"headquarters after the move, and\n" + 
+				"those looking for us have finally\n" + 
+				"located the old base. You'll have\n" + 
+				"to work fast.\n"
+levmin8			5
+levsec8			0
+
+levnames9		"Zone 10: Braker's Mountain"
+levtext9		"A dangerous horde of mutants are\n" + 
+				"holding humans prisoner inside the\n" + 
+				"mountain.  Rescue them before the\n" + 
+				"area is 'sanitized.'\n"
+levmin9			5
+levsec9			0
+
+levnames10		"Zone 11: Wounded Village"
+levtext10		"Drones have gone rampant and are\n" + 
+				"killing the population of this\n" + 
+				"village.  Before the situation is\n" + 
+				"'gotten under control,' you need to\n" + 
+				"get those people out of there.\n"
+levmin10		7
+levsec10		0
+
+levnames11		"Zone 12: Murder Hill"
+levtext11		"A tank brigade is hunting down AWOL\n" + 
+				"soldiers. Little do they know that\n" + 
+				"the whole area is about be baked by\n" + 
+				"enemy missiles. Those soldiers have\n" + 
+				"some interesting information that we\n" + 
+				"would like to acquire.\n"
+levmin11		7
+levsec11		0
+
+levnames12		"Zone 13: TerraChem Corp."
+levtext12		"There are engineers trapped in the\n" + 
+				"TerraChem building.  Get them back so\n" + 
+				"they can testify against TerraChem.\n" + 
+				"But hurry, the whole building's gonna\n" + 
+				"blow!\n"
+levmin12		7
+levsec12		0
+
+levnames13		"Zone 14: Gulf Tech University"
+levtext13		"Terrorists are about to bomb Gulf Tech\n" + 
+				"University off the face of the earth.\n" + 
+				"We haven't been able to reach the\n" + 
+				"scientists there. Get them out of there!\n"
+levmin13		7
+levsec13		0
+
+levnames14		"Zone 15: Agromatic Inc. Farm"
+levtext14		"The Agromatic Inc. Corporate farm is\n" + 
+				"being nuked by their competitors at\n" + 
+				"at TerraTronic Inc.  Get the innocent\n" + 
+				"farmers to safety.\n"
+levmin14		7
+levsec14		0
+
+levnames15		"Zone 16: National Agency for Defense"
+levtext15		"Some of our UFA spies are trapped in\n" + 
+				"NAD headquarters. Rescue them before\n" + 
+				"the enemy missiles get there.\n"
+levmin15		9
+levsec15		0
+
+levnames16		"Zone 17: Jackson International Airport"
+levtext16		"The airport is under siege by\n" + 
+				"terrorist forces. Get the civilians \n" + 
+				"out before the Company takes care of\n" + 
+				"the situation.\n"
+levmin16		9
+levsec16		0
+
+levnames17		"Zone 18: Museum of Modern Art"
+levtext17		"The Museum is going to be bombed by\n" + 
+				"by Dadaists.  The bombing is their\n" + 
+				"form of anti-expression. They've\n" + 
+				"barred the exits and the missiles are\n" + 
+				"coming.  Good luck.\n"
+levmin17		9
+levsec17		0
+
+levnames18		"Zone 19: AUF Headquarters"
+levtext18		"Our competitors, the Alliance for a\n" + 
+				"Utopian Future, are getting a little\n" + 
+				"too good to ignore. We're nuking them.\n" + 
+				"However, we really don't want to kill\n" + 
+				"anyone, so get them out of there\n" + 
+				"before our missiles get there.\n" + 
+				"It's just a matter of business, you\n" + 
+				"understand..."
+levmin18		9
+levsec18		0
+
+levnames19		"Zone 20: UFA Headquarters"
+levtext19		"The AUF apparently had a backup strike\n" + 
+				"force that we didn't know about. All\n" + 
+				"our people are alerted, but there are\n" + 
+				"a number of people on the lower levels\n" + 
+				"that won't be able to get out in time.\n" + 
+				"Get them quick!  Meet you at Basepoint\n" + 
+				"Delta!\n"
+levmin19		9
+levsec19		59
+
+Intro1			"Hovertank+ v1.00\n\n"
+Intro2			"Softdisk Publishing delivers a\n"
+Intro3			"high quality EGA game to\n"
+Intro4			"your door every month!\n"
+Intro5			"Call 1-800-831-2694 for\n"
+Intro6			"subscription rates and\n"
+Intro7			"back issues.\n"
+
+DoHelpText1		"HoverTank+ Commands\n"
+DoHelpText2		"F2  : Sound on / off\n" + 
+				"F3  : Keyboard mode / custom\n" +
+				"F4  : Joystick mode\n" +
+				"F5  : Reset game\n" + 
+				"ESC : Quit\n"
+DoHelpText3		"UP / DOWN : forward/reverse\n" +
+				"LEFT / RIGHT : turn\n"
+DoHelpText4		"<MORE>"
+DoHelpText5		"Button 1 / Ctrl\n"
+DoHelpText6		"---------------\n\n"
+DoHelpText7		"Charge cannon.  A fully charged cannon\n" +
+				"can shoot through multiple targets.\n" +
+				"While the cannon is charging, your\n" + 
+				"tanks turning speed is halved for fine\n" +
+				"aiming adjustments.\n" +
+				"\n"
+DoHelpText8		"<MORE>"
+DoHelpText9		"Button 2 / Alt\n"
+DoHelpText10	"---------------\n\n"
+DoHelpText11	"Afterburner thrusting.  Doubles your\n" +
+				"forward or backwards speed, but does\n" +
+				"not effect your turning speed.\n"
+
+DebugMemory1	"Memory Usage\n"
+DebugMemory2	"------------"
+DebugMemory3	"\nTotal     :"
+DebugMemory4	"k\nFree      :"
+DebugMemory5	"k\nWith purge:"
+DebugMemory6	"k\n"
+DebugMemory7	""
+
+DebugKeys1		"God mode off"
+DebugKeys2		"God mode on"
+DebugKeys3		"Warp to which level(1-20):"
+
+CheckKeys1		"Sound (Y/N)?"
+CheckKeys2		"RESET GAME (Y/N)?"
+CheckKeys3		"QUIT (Y/N)?"
+
+main1			"HOVERTANK+\n"
+main2			"Copyright 1991-93 Softdisk Publishing\n"
+main3			"Version 1.00\n"
+
+GameOver1		"New High Score!\n"
+GameOver2		"Score\n"
+GameOver3		"\n\n"
+GameOver4		"Old\n"
+GameOver5		"\n"
+GameOver6		"Congratulations!\n"
+GameOver7		""
+
+Victory1		"Crowds of cheering people surround\n"
+Victory2		"your tank. Cargo lifts deliver your\n"
+Victory3		"impressive bounty. The crowd quiets\n"
+Victory4		"as a distinguished man steps forward.\n"
+Victory5		"'Well done,' says the UFA President.\n"
+Victory6		"'You have saved many deserving people.'\n"
+Victory7		"\n"
+Victory8		"'Mr. Sledge?  I said you've done well.'\n"
+Victory9		"You ignore him and count the reward\n"
+Victory10		"again. He says, 'Too bad about those\n"
+Victory11		"ones you lost...'\n"
+Victory12		"'What?  I dropped some bills?' you say.\n"
+Victory13		"Game Over!"
+
+BaseScreen1		"UFA Headquarters\n"
+BaseScreen2		"Saved: "
+BaseScreen3		", Lost: "
+BaseScreen4		"\nSavior reward..."
+BaseScreen5		"\nTime bonus...\n"
+BaseScreen6		"\nRepairing tank..."
+BaseScreen7		"Mission completed!"
+BaseScreen8		"GO TO NEXT SECTOR"
+BaseScreen9		"\nEnemies: "
+BaseScreen10	" / "
+
+PlayGame1		" Start at what level (1-"
+PlayGame2		")?"
+PlayGame3		"Continue game ?"
+
+CalibrateJoy1	"Joystick Configuration\n"
+CalibrateJoy2	"Hold the joystick in the UPPER LEFT\n"
+CalibrateJoy3	"corner and press a button:"
+CalibrateJoy4	"\nHold the joystick in the LOWER RIGHT\n"
+CalibrateJoy5	"corner and press a button:"
+CalibrateJoy6	"\n(F)ire or (A)fterburn with B1 ?"
+
+calibratekeys1	"Keyboard Configuration"
+calibratekeys2	"\n1 north"
+calibratekeys3	"\n2 east"
+calibratekeys4	"\n3 south"
+calibratekeys5	"\n4 west"
+calibratekeys6	"\n5 button1"
+calibratekeys7	"\n6 button2"
+calibratekeys8	"\nModify which action:"
+calibratekeys9	":"
+calibratekeys10	"\nPress the new key:"
+
+cyclecolors0	3
+cyclecolors1	3
+cyclecolors2	11
+barColor		15

@@ -408,9 +408,9 @@ ENDP
 
 EXTRN	jmPlaySample:PROC
 
-PROC	PlaySound playnum:WORD
+PROC	OldPlaySound playnum:WORD
 	USES	SI
-	PUBLIC PlaySound
+	PUBLIC OldPlaySound
 
 	test	[dontplay],-1	;for profiler
 	jne	@@playdone

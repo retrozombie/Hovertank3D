@@ -17,6 +17,7 @@
  */
 
 #include "HOVERDEF.H"
+#include "GAMECFG.H"
 #pragma hdrstop
 
 //==========================================================================
@@ -40,6 +41,9 @@ objtype objlist[MAXOBJECTS],obon,*new,*obj,*lastobj,*check;
 ControlStruct c;
 
 int numrefugees,totalrefugees,savedcount,killedcount;
+
+// as: Enemy stats
+int enemiesKilled, totalEnemies;
 
 int bordertime;
 
@@ -73,7 +77,7 @@ void SpawnShot (fixed gx, fixed gy, int angle, classtype class);
 void ShotThink (void);
 void ExplodeThink (void);
 void SpawnRefugee (fixed gx, fixed gy, int sex);
-void KillRefugee (objtype *hit);
+void KillRefugee (objtype *hit, int player);
 void RefugeeThink (void);
 void SpawnDrone (fixed gx, fixed gy);
 void DroneThink (void);
@@ -181,57 +185,74 @@ void FindFreeObj (void)
 ==================
 */
 
-void StartLevel (unsigned far *plane1)
+void StartLevel(unsigned far *plane1)
 {
-  unsigned x,y,tile,dir;
-  int angle;
-  fixed gx,gy;
+    unsigned x, y, tile, dir;
+    int angle;
+    fixed gx, gy;
 
-  numrefugees = 0;
+    numrefugees = 0;
 
-  for (y=0;y<levelheader->height;y++)
-    for (x=0;x<levelheader->width;x++)
-      if ( (tile=*plane1++) > 0 )
-      {
-	dir = tile>>8;			// high byte gives starting dir
-	tile &= 0xff;
-	gx = x*TILEGLOBAL+TILEGLOBAL/2;
-	gy = y*TILEGLOBAL+TILEGLOBAL/2;
-	switch (tile)
-	{
-	  case 1:
-	    SpawnRefugee (gx,gy,1);
-	    break;
-	  case 2:
-	    SpawnDrone (gx+TILEGLOBAL/2,gy+TILEGLOBAL/2);
-	    break;
-	  case 3:
-	    SpawnTank (gx+TILEGLOBAL/2,gy+TILEGLOBAL/2);
-	    break;
-	  case 4:
-	    SpawnMutant (gx+TILEGLOBAL/2,gy+TILEGLOBAL/2);
-	    break;
-	  case 5:
-	    SpawnShield (gx,gy);
-	    break;
-	  case 6:
-	    SpawnRefugee (gx,gy,0);
-	    break;
-	  case 0xfe:
-	    warpx =gx;		// warp gate is spawned when all men are done
-	    warpy =gy;
-	    break;
-	  case 0xff:
-	    SpawnPlayer (gx,gy);
-	    angle = ANGLES/4-dir*ANGLES/4;
-	    if (angle<0)
-	      angle+= ANGLES;
-	    objlist[0].angle = angle;
-	    break;
-	}
-      }
+    // as: Enemy stats
+    enemiesKilled = 0;
+    totalEnemies = 0;
 
-  totalrefugees = numrefugees;
+    for(y = 0; y < levelheader->height; y++)
+    {
+        for(x = 0; x<levelheader->width; x++)
+        {
+            if((tile = *plane1++) > 0)
+            {
+                dir = tile >> 8;			// high byte gives starting dir
+                tile &= 0xff;
+                gx = x*TILEGLOBAL + TILEGLOBAL / 2;
+                gy = y*TILEGLOBAL + TILEGLOBAL / 2;
+                switch(tile)
+                {
+                    case 1:
+                        SpawnRefugee(gx, gy, 1);
+                        break;
+
+                    case 2:
+                        SpawnDrone(gx + TILEGLOBAL / 2, gy + TILEGLOBAL / 2);
+                        break;
+
+                    case 3:
+                        SpawnTank(gx + TILEGLOBAL / 2, gy + TILEGLOBAL / 2);
+                        break;
+
+                    case 4:
+                        SpawnMutant(gx + TILEGLOBAL / 2, gy + TILEGLOBAL / 2);
+                        break;
+
+                    case 5:
+                        SpawnShield(gx, gy);
+                        break;
+
+                    case 6:
+                        SpawnRefugee(gx, gy, 0);
+                        break;
+
+                    case 0xfe:
+                        warpx = gx;		// warp gate is spawned when all men are done
+                        warpy = gy;
+                        break;
+
+                    case 0xff:
+                        SpawnPlayer(gx, gy);
+
+                        angle = ANGLES / 4 - dir*ANGLES / 4;
+                        if(angle < 0)
+                            angle += ANGLES;
+
+                        objlist[0].angle = angle;
+                        break;
+                }
+            }
+        }
+    }
+
+    totalrefugees = numrefugees;
 }
 
 
@@ -554,52 +575,52 @@ void Frame(xl,yl,xh,yh,color)
 #define CYCLETIME	6
 #define FOCUS		10
 
-int cyclecolors[NUMCYCLES] = {3,3,11};
+int cyclecolors[NUMCYCLES] = { 3, 3, 11 };
 
-void WarpEffect (void)
+void WarpEffect(void)
 {
-  int i,size;
-  long oldtime,time;
+    int i, size;
+    long oldtime, time;
 
-  screenofs = screenloc[screenpage];
-  SetScreen ( screenofs,0);
-
-  memset (zbuffer,0,sizeof(zbuffer));
-
-  EGAWRITEMODE(2);
-
-  for (size=0;size<8;size++)
-  {
     screenofs = screenloc[screenpage];
-    Frame (size,size,39-size,15-size,cyclecolors[size%NUMCYCLES]);
-    screenofs = screenloc[(screenpage+1)%3];
-    Frame (size,size,39-size,15-size,cyclecolors[(size+1)%NUMCYCLES]);
-    screenofs = screenloc[(screenpage+2)%3];
-    Frame (size,size,39-size,15-size,cyclecolors[(size+2)%NUMCYCLES]);
-  }
+    SetScreen(screenofs, 0);
 
-  oldtime = timecount;
+    memset(zbuffer, 0, sizeof(zbuffer));
 
-  PlaySound (WARPGATESND);
+    EGAWRITEMODE(2);
 
-  do
-  {
-    time = timecount - oldtime;
-    if (time > WARPSTEPS)
-      time = WARPSTEPS;
+    for(size = 0; size < 8; size++)
+    {
+        screenofs = screenloc[screenpage];
+        Frame(size, size, 39 - size, 15 - size, cyclecolors[size % NUMCYCLES]);
+        screenofs = screenloc[(screenpage + 1) % 3];
+        Frame(size, size, 39 - size, 15 - size, cyclecolors[(size + 1) % NUMCYCLES]);
+        screenofs = screenloc[(screenpage + 2) % 3];
+        Frame(size, size, 39 - size, 15 - size, cyclecolors[(size + 2) % NUMCYCLES]);
+    }
 
-    screenofs = screenloc[(screenpage+ time/CYCLETIME )%3];
+    oldtime = timecount;
 
-    SC_ScaleShape (CENTERX,64,255*FOCUS / (WARPSTEPS+FOCUS-time),
-      scalesegs[WARP1PIC+ (time/CYCLETIME)%4] );
+    PlaySound(WARPGATESND);
 
-    SetScreen (screenloc[(screenpage+ time/CYCLETIME )%3],0);
-  } while (time<WARPSTEPS && NBKascii != 27);
+    do
+    {
+        time = timecount - oldtime;
+        if(time > WARPSTEPS)
+            time = WARPSTEPS;
 
-  ClearKeys();
+        screenofs = screenloc[(screenpage + time / CYCLETIME) % 3];
 
-  EGAWRITEMODE(0);
-  EGABITMASK(255);
+        SC_ScaleShape(CENTERX, 64, 255 * FOCUS / (WARPSTEPS + FOCUS - time),
+            scalesegs[WARP1PIC + (time / CYCLETIME) % 4]);
+
+        SetScreen(screenloc[(screenpage + time / CYCLETIME) % 3], 0);
+    } while(time < WARPSTEPS && NBKascii != 27);
+
+    ClearKeys();
+
+    EGAWRITEMODE(0);
+    EGABITMASK(255);
 }
 
 //==========================================================================
@@ -612,43 +633,42 @@ void WarpEffect (void)
 =====================
 */
 
-void GameOver (void)
+void GameOver(void)
 {
-  if (level != 21)
-  {
-    FadeUp();
-    CacheDrawPic(DEATHPIC);
-    PlaySound (NUKESND);
-    FadeDown();
-    Ack();
-  }
+    if(level != 21)
+    {
+        FadeUp();
+        CacheDrawPic(DEATHPIC);
+        PlaySound(NUKESND);
+        FadeDown();
+        Ack();
+    }
 
-//
-// high score?
-//
+    //
+    // high score?
+    //
 
-  if (score>highscore)
-  {
-    PlaySound (HIGHSCORESND);
-    ExpWin(18,11);
-    py+=3;
-    CPPrint ("New High Score!\n");
-    py+=5;
-    CPPrint ("Score\n");
-    ltoa(score,str,10);
-    CPPrint (str);
-    PPrint ("\n\n");
-    CPPrint ("Old\n");
-    ltoa(highscore,str,10);
-    CPPrint (str);
-    PPrint ("\n");
-    py+=5;
-    CPPrint ("Congratulations!\n");
-    CPPrint ("");
-    Ack();
-    highscore = score;
-  }
-
+    if(score > highscore)
+    {
+        PlaySound(HIGHSCORESND);
+        ExpWin(18, 11);
+        py += 3;
+        CPPrint(gameStrings[STR_GameOver1]); // as: string replacements
+        py += 5;
+        CPPrint(gameStrings[STR_GameOver2]); // as: string replacements
+        ltoa(score, str, 10);
+        CPPrint(str);
+        PPrint(gameStrings[STR_GameOver3]); // as: string replacements
+        CPPrint(gameStrings[STR_GameOver4]); // as: string replacements
+        ltoa(highscore, str, 10);
+        CPPrint(str);
+        PPrint(gameStrings[STR_GameOver5]); // as: string replacements
+        py += 5;
+        CPPrint(gameStrings[STR_GameOver6]); // as: string replacements
+        CPPrint(gameStrings[STR_GameOver7]); // as: string replacements
+        Ack();
+        highscore = score;
+    }
 }
 
 //==========================================================================
@@ -661,45 +681,43 @@ void GameOver (void)
 =====================
 */
 
-void Victory (void)
+void Victory(void)
 {
-  FadeOut();
-  CacheDrawPic(ENDPIC);
-  FadeIn();
-  DrawWindow (0,0,39,6);
-  CPPrint ("Crowds of cheering people surround\n");
-  CPPrint ("your tank. Cargo lifts deliver your\n");
-  CPPrint ("impressive bounty. The crowd quiets\n");
-  CPPrint ("as a distinguished man steps forward.\n");
+    FadeOut();
+    CacheDrawPic(ENDPIC);
+    FadeIn();
+    DrawWindow(0, 0, 39, 6);
+    CPPrint(gameStrings[STR_Victory1]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory2]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory3]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory4]); // as: string replacements
 
-  Ack();
-  EraseWindow();
+    Ack();
+    EraseWindow();
 
-  CPPrint ("'Well done,' says the UFA President.\n");
-  CPPrint ("'You have saved many deserving people.'\n");
-  CPPrint ("\n");
-  CPPrint ("'Mr. Sledge?  I said you've done well.'\n");
+    CPPrint(gameStrings[STR_Victory5]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory6]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory7]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory8]); // as: string replacements
 
-  Ack();
-  EraseWindow();
+    Ack();
+    EraseWindow();
 
-  CPPrint ("You ignore him and count the reward\n");
-  CPPrint ("again. He says, 'Too bad about those\n");
-  CPPrint ("ones you lost...'\n");
-  CPPrint ("'What?  I dropped some bills?' you say.\n");
+    CPPrint(gameStrings[STR_Victory9]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory10]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory11]); // as: string replacements
+    CPPrint(gameStrings[STR_Victory12]); // as: string replacements
 
-  Ack();
+    Ack();
 
-  DrawWindow (10,21,30,24);
-  py+=3;
-  CPPrint ("Game Over!");
+    DrawWindow(10, 21, 30, 24);
+    py += 3;
+    CPPrint(gameStrings[STR_Victory13]); // as: string replacements
 
-  Ack();
+    Ack();
 }
 
 //==========================================================================
-
-#include "HOVTEXT.C"
 
 /*
 =====================
@@ -711,197 +729,204 @@ void Victory (void)
 =====================
 */
 
-void BaseScreen (void)
+void BaseScreen(void)
 {
-  int i;
-  unsigned topofs;
+    int i;
+    unsigned topofs;
 
 #ifdef TESTCASE
-  level++;
-  LoadLevel();
-  StopDrive();
-  return;
+    level++;
+    LoadLevel();
+    StopDrive();
+    return;
 #endif
 
 
-  CachePic (STARTPICS+MISSIONPIC);
-//
-// cash screen
-//
-  if (level!=startlevel)	// send them straight into the first level
-  {
-#ifndef PROFILE
-    WarpEffect();
-#endif
-
-    CachePic (STARTPICS+UFAPIC);
-    DrawPic (0,0,UFAPIC);
-    if (killedcount>=savedcount)
+    CachePic(STARTPICS + MISSIONPIC);
+    //
+    // cash screen
+    //
+    if(level != startlevel)	// send them straight into the first level
     {
-      CachePic (STARTPICS+MADUFAPIC);
-      DrawPic (0,0,MADUFAPIC);
-      MMSetPurge (&grsegs[STARTPICS+MADUFAPIC],3);
+#ifndef PROFILE
+        WarpEffect();
+#endif
+
+        CachePic(STARTPICS + UFAPIC);
+        DrawPic(0, 0, UFAPIC);
+        if(killedcount >= savedcount)
+        {
+            CachePic(STARTPICS + MADUFAPIC);
+            DrawPic(0, 0, MADUFAPIC);
+            MMSetPurge(&grsegs[STARTPICS + MADUFAPIC], 3);
+        }
+        MMSetPurge(&grsegs[STARTPICS + UFAPIC], 3);
+
+        pxl = 176;
+        pxh = 311;
+
+        py = 10;
+        CPPrint(gameStrings[STR_BaseScreen1]); // as: string replacements
+        py += 5;
+        PPrint(gameStrings[STR_BaseScreen2]); // as: string replacements
+        PPrintInt(savedcount);
+        PPrint(gameStrings[STR_BaseScreen3]); // as: string replacements
+        PPrintInt(killedcount);
+
+        // as: Enemy stats
+        py += 5;
+        PPrint(gameStrings[STR_BaseScreen9]); // as: string replacements
+        PPrintInt(enemiesKilled);
+        PPrint(gameStrings[STR_BaseScreen10]); // as: string replacements
+        PPrintInt(totalEnemies);
+
+        topofs = screenofs;
+
+        py += 5;
+        PPrint(gameStrings[STR_BaseScreen4]); // as: string replacements
+        screenofs = 0;		// draw into the split screen
+
+        //
+        // points for saving refugees
+        //
+        for(i = 1; i <= savedcount; i++)
+        {
+            DrawPic(1 + 2 * (savedcount - i), 6, EMPTYGUYPIC);
+            score += REFUGEEPOINTS;
+            PlaySound(GUYSCORESND);
+            DrawScore();
+#ifndef PROFILE
+            if(NBKascii != 27)
+                WaitVBL(30);
+#endif
+        }
+
+        screenofs = topofs;
+        py += 5;
+        PPrint(gameStrings[STR_BaseScreen5]); // as: string replacements
+        screenofs = 0;		// draw into the split screen
+
+        //
+        // points for time remaining
+        //
+        while(timestruct.sec || timestruct.min)
+        {
+            score += TIMEPOINTS;
+
+            if(--timestruct.sec < 0)
+            {
+                timestruct.sec = 59;
+                if(--timestruct.min < 0)
+                {
+                    timestruct.sec = timestruct.min = 0;
+                }
+                DrawPic(6, 48, DIGIT0PIC + timestruct.min);
+            }
+            DrawPic(9, 48, DIGIT0PIC + timestruct.sec / 10);
+            DrawPic(11, 48, DIGIT0PIC + timestruct.sec % 10);
+
+            if(!(timestruct.sec % 5))
+                PlaySound(TIMESCORESND);
+            DrawScore();
+#ifndef PROFILE
+            if(NBKascii != 27)
+                WaitVBL(2);
+#endif
+        }
+
+        if(objlist[0].hitpoints < 3)
+        {
+            screenofs = topofs;
+            PPrint(gameStrings[STR_BaseScreen6]); // as: string replacements
+            screenofs = 0;		// draw into the split screen
+            //
+            // heal tank
+            //
+            while(objlist[0].hitpoints<3 && score>10000)
+            {
+                score -= 10000;
+                DrawScore();
+                HealPlayer(ARMORUPSND);
+#ifndef PROFILE
+                if(NBKascii != 27)
+                    WaitVBL(60);
+#endif
+                ColorBorder(0);
+                bordertime = 0;
+            }
+        }
+
+        screenofs = topofs;
+        py = 110;
+        if(level == NUMLEVELS)
+            CPPrint(gameStrings[STR_BaseScreen7]); // as: string replacements
+        else
+            CPPrint(gameStrings[STR_BaseScreen8]); // as: string replacements
+
+        StopDrive();
+
+#ifndef PROFILE
+        Ack();
+#endif
+
+        if(level == NUMLEVELS)
+        {
+            Victory();
+            level++;
+            return;
+        }
     }
-    MMSetPurge (&grsegs[STARTPICS+UFAPIC],3);
 
-    pxl= 176;
-    pxh= 311;
-
-    py=10;
-    CPPrint ("UFA Headquarters\n");
-    py += 5;
-    PPrint ("Saved:");
-    PPrintInt (savedcount);
-    PPrint ("\nLost:");
-    PPrintInt (killedcount);
-    topofs = screenofs;
-
-
-    py += 5;
-    PPrint ("\nSavior reward...");
-    screenofs = 0;		// draw into the split screen
+    MMSetPurge(&grsegs[STARTPICS + MISSIONPIC], 3);
+    MMSortMem();			// push all purgable stuff high for good cache
+    FadeOut();
 
     //
-    // points for saving refugees
+    // briefing screen
     //
-    for (i=1;i<=savedcount;i++)
-    {
-      DrawPic (1+2*(savedcount-i),6,EMPTYGUYPIC);
-      score += REFUGEEPOINTS;
-      PlaySound (GUYSCORESND);
-      DrawScore ();
-#ifndef PROFILE
-      if (NBKascii != 27)
-	WaitVBL(30);
-#endif
-    }
+    level++;
+    LoadLevel();
+    StopDrive();
 
-    screenofs = topofs;
-    py += 5;
-    PPrint ("\nTime bonus...\n");
-    screenofs = 0;		// draw into the split screen
+    EGAWRITEMODE(0);
+    _fmemset(MK_FP(0xa000, 0), 0, 0xffff);
+    EGASplitScreen(200 - STATUSLINES);
+    SetLineWidth(SCREENWIDTH);
+    DrawCockpit();
 
     //
-    // points for time remaining
+    // draw custom dash stuff
     //
-    while (timestruct.sec || timestruct.min)
-    {
-      score += TIMEPOINTS;
+    DrawPic(1, 48, DIGIT0PIC + level / 10);
+    DrawPic(3, 48, DIGIT0PIC + level % 10);
+    for(i = 0; i < numrefugees; i++)
+        DrawPic(1 + 2 * i, 6, EMPTYGUYPIC);
 
-      if (--timestruct.sec<0)
-      {
-	timestruct.sec = 59;
-	if (--timestruct.min<0)
-	{
-	  timestruct.sec = timestruct.min = 0;
-	}
-	DrawPic (6,48,DIGIT0PIC+timestruct.min);
-      }
-      DrawPic (9,48,DIGIT0PIC+timestruct.sec/10);
-      DrawPic (11,48,DIGIT0PIC+timestruct.sec%10);
+    //
+    // do mission briefing
+    //
 
-      if ( !(timestruct.sec%5) )
-	PlaySound (TIMESCORESND);
-      DrawScore ();
-#ifndef PROFILE
-      if (NBKascii != 27)
-	WaitVBL(2);
-#endif
-    }
+    screenofs = screenloc[0];
+    SetScreen(screenofs, 0);
+    DrawPic(0, 0, MISSIONPIC);
 
-    if (objlist[0].hitpoints<3)
-    {
-      screenofs = topofs;
-      PPrint ("\nRepairing tank...");
-      screenofs = 0;		// draw into the split screen
-      //
-      // heal tank
-      //
-      while (objlist[0].hitpoints<3 && score>10000)
-      {
-	score -= 10000;
-	DrawScore ();
-	HealPlayer ();
-#ifndef PROFILE
-	if (NBKascii != 27)
-	  WaitVBL(60);
-#endif
-	ColorBorder (0);
-	bordertime = 0;
-      }
-    }
+    pxl = 10;
+    pxh = 310;
 
-    screenofs = topofs;
-    py = 110;
-    if (level == NUMLEVELS)
-      CPPrint ("Mission completed!");
-    else
-      CPPrint ("GO TO NEXT SECTOR");
+    py = 10;
+    CPPrint(gameStrings[STR_levnames0 + level - 1]); // as: string replacements
 
-    StopDrive ();
+    py = 37;
+    px = pxl;
 
+    PPrint(gameStrings[STR_levtext0 + level - 1]); // as: string replacements
+
+    FadeIn();
+    ClearKeys();
 #ifndef PROFILE
     Ack();
-#endif
 
-    if (level == NUMLEVELS)
-    {
-      Victory();
-      level++;
-      return;
-    }
-  }
-
-  MMSetPurge (&grsegs[STARTPICS+MISSIONPIC],3);
-  MMSortMem();			// push all purgable stuff high for good cache
-  FadeOut();
-
-//
-// briefing screen
-//
-  level++;
-  LoadLevel();
-  StopDrive();
-
-  EGAWRITEMODE(0);
-  _fmemset (MK_FP(0xa000,0),0,0xffff);
-  EGASplitScreen(200-STATUSLINES);
-  SetLineWidth(SCREENWIDTH);
-  DrawCockpit();
-
-//
-// draw custom dash stuff
-//
-  DrawPic (1,48,DIGIT0PIC+level/10);
-  DrawPic (3,48,DIGIT0PIC+level%10);
-  for (i=0;i<numrefugees;i++)
-    DrawPic (1+2*i,6,EMPTYGUYPIC);
-
-//
-// do mission briefing
-//
-
-  screenofs = screenloc[0];
-  SetScreen (screenofs,0);
-  DrawPic (0,0,MISSIONPIC);
-
-  pxl= 10;
-  pxh= 310;
-
-  py = 10;
-  CPPrint (levnames[level-1]);
-
-  py=37;
-  px=pxl;
-
-  PPrint (levtext[level-1]);
-
-  FadeIn();
-  ClearKeys();
-#ifndef PROFILE
-  Ack();
-
-  WarpEffect();
+    WarpEffect();
 #endif
 }
 
@@ -917,43 +942,43 @@ void BaseScreen (void)
 ===================
 */
 
-void PlayLoop (void)
+void PlayLoop(void)
 {
-  do
-  {
-    c=ControlPlayer(1);
-
-    screenofs = 0;	// draw in split screen (radar, time, etc)
-
-    for (obj = &objlist[0];obj<=lastobj;obj++)
+    do
     {
-      if (obj->class)
-      {
-	obon=*obj;
-	obon.think();
-	*obj=obon;
-      }
-    }
+        c = ControlPlayer(1);
 
-    DropTime();
+        screenofs = 0;	// draw in split screen (radar, time, etc)
 
-    if (keydown[0x57])	// DEBUG!
-    {
-      DamagePlayer();
-      ClearKeys();
-    }
+        for(obj = &objlist[0]; obj <= lastobj; obj++)
+        {
+            if(obj->class)
+            {
+                obon = *obj;
+                obon.think();
+                *obj = obon;
+            }
+        }
 
-    if (bordertime && (bordertime-=tics) <=0)
-    {
-      bordertime = 0;
-      ColorBorder (0);
-    }
+        DropTime();
 
-    FinishView();	// base drawn by player think
-    CheckKeys();
+        if(keydown[0x57])	// DEBUG!
+        {
+            // as: Support for extra sound effects
+            DamagePlayer(TAKEDAMAGESND);
+            ClearKeys();
+        }
 
-  }while (!leveldone);
+        if(bordertime && (bordertime -= tics) <= 0)
+        {
+            bordertime = 0;
+            ColorBorder(0);
+        }
 
+        FinishView();	// base drawn by player think
+        CheckKeys();
+
+    } while(!leveldone);
 }
 
 
@@ -966,120 +991,122 @@ void PlayLoop (void)
 ===================
 */
 
-int levmin[20] =
+int levmin[NUMLEVELS] =
 {
-3,3,4,4,6,
-5,5,5,5,5,
-7,7,7,7,7,
-9,9,9,9,9
+    3, 3, 4, 4, 6,
+    5, 5, 5, 5, 5,
+    7, 7, 7, 7, 7,
+    9, 9, 9, 9, 9
 };
 
-void PlayGame (void)
+// as: modified games
+int levsec[NUMLEVELS] =
 {
-  int i,xl,yl,xh,yh;
-  char num[20];
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 59
+};
 
-  level = startlevel = 0;
+void PlayGame(void)
+{
+    int i, xl, yl, xh, yh;
+    char num[20];
 
-  if (bestlevel>1)
-  {
-	ExpWin(28,3);
-	py+=6;
-	PPrint(" Start at what level (1-");
-	itoa(bestlevel,str,10);
-	PPrint (str);
-	PPrint (")?");
-	i = InputInt();
-	if (i>=1 && i<=bestlevel)
-	{
-	  level = startlevel = i-1;
-	}
-  }
+    level = startlevel = 0;
+
+    if(bestlevel > 1)
+    {
+        ExpWin(28, 3);
+        py += 6;
+        PPrint(gameStrings[STR_PlayGame1]); // as: string replacements
+        itoa(bestlevel, str, 10);
+        PPrint(str);
+        PPrint(gameStrings[STR_PlayGame2]); // as: string replacements
+        i = InputInt();
+        if(i >= 1 && i <= bestlevel)
+        {
+            level = startlevel = i - 1;
+        }
+    }
 
 restart:
 
-  resetgame = score = 0;
+    resetgame = score = 0;
 
-  do
-  {
+    do
+    {
 
-	lastobj = &objlist[0];
+        lastobj = &objlist[0];
 
 #ifdef TESTCASE
-	level = 12;
+        level = 12;
 #endif
 
-	BaseScreen ();
-	if (level==21)
-	  break;
+        BaseScreen();
+        if(level == 21)
+            break;
 
 #ifdef TESTCASE
-	objlist[0].x = 3126021;
-	objlist[0].y = 522173;
-	objlist[0].angle = 170;
+        objlist[0].x = 3126021;
+        objlist[0].y = 522173;
+        objlist[0].angle = 170;
 #endif
 
-	savedcount = killedcount = 0;
+        savedcount = killedcount = 0;
 
-	timestruct.min = levmin[level-1];
-	timestruct.sec = 0;
-	if (level == 20)
-	  timestruct.sec = 59;
+        timestruct.min = levmin[level - 1];
+        timestruct.sec = levsec[level - 1]; // as: modified games
 
-    screenofs = 0;
-    DrawPic (6,48,DIGIT0PIC+timestruct.min);
-    DrawPic (9,48,DIGIT0PIC+timestruct.sec/10);
-    DrawPic (11,48,DIGIT0PIC+timestruct.sec%10);
+        screenofs = 0;
+        DrawPic(6, 48, DIGIT0PIC + timestruct.min);
+        DrawPic(9, 48, DIGIT0PIC + timestruct.sec / 10);
+        DrawPic(11, 48, DIGIT0PIC + timestruct.sec % 10);
 
-    lasttimecount = timecount;
-    tics = 1;
-    leveldone = 0;
+        lasttimecount = timecount;
+        tics = 1;
+        leveldone = 0;
 
-	if (level>bestlevel)
-	  bestlevel = level;
+        if(level > bestlevel)
+            bestlevel = level;
 
-	PlayLoop ();
+        PlayLoop();
 
-    screenofs = 0;
-    for (obj=&objlist[1];obj<lastobj;obj++)
-      if (obj->class && obj->radarx)
-	XPlot (obj->radarx,obj->radary,obj->radarcolor);
+        screenofs = 0;
+        for(obj = &objlist[1]; obj < lastobj; obj++)
+            if(obj->class && obj->radarx)
+                XPlot(obj->radarx, obj->radary, obj->radarcolor);
 
-    if (bordertime)
+        if(bordertime)
+        {
+            bordertime = 0;
+            ColorBorder(0);
+        }
+
+    } while(leveldone > 0);
+
+    if(resetgame)
+        return;
+
+    GameOver();
+
+    //
+    // continue
+    //
+
+    if(level > 2 && level < 21)
     {
-      bordertime = 0;
-      ColorBorder (0);
+        DrawWindow(10, 20, 30, 23);
+        py += 3;
+        CPPrint(gameStrings[STR_PlayGame3]); // as: string replacements
+        ClearKeys();
+        ch = PGet();
+        if(toupper(ch) == 'Y')
+        {
+            level--;
+            startlevel = level;	// don't show base screen
+            goto restart;
+        }
     }
-
-  }
-  while (leveldone>0);
-
-  if (resetgame)
-    return;
-
-  GameOver();
-
-//
-// continue
-//
-
-  if (level>2 && level<21)
-  {
-    DrawWindow (10,20,30,23);
-    py+=3;
-    CPPrint ("Continue game ?");
-    ClearKeys();
-    ch = PGet();
-    if (toupper(ch)=='Y')
-    {
-      level--;
-      startlevel = level;	// don't show base screen
-      goto restart;
-    }
-  }
 
 }
-
-
-
-
